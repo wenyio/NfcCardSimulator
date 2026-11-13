@@ -41,14 +41,17 @@ class CardPackDeviceTest {
                     assertEquals("预览卡", app.store.currentCards().single().name)
                 }
                 scenario.recreate()
+                val instrumentation = InstrumentationRegistry.getInstrumentation()
+                val monitor = instrumentation.addMonitor(com.iscolt.cardsimulator.ui.cards.CardPackManagerActivity::class.java.name, null, false)
                 scenario.onActivity { activity ->
                     views(activity.window.decorView).first { it.contentDescription == "管理卡包：导入预览测试" }.performClick()
                 }
-                InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+                // 等待目标 Activity 真正启动；队列空闲不代表跨页面导航已经完成。
+                val manager = try {
+                    requireNotNull(instrumentation.waitForMonitorWithTimeout(monitor, 5000))
+                } finally { instrumentation.removeMonitor(monitor) }
+                instrumentation.waitForIdleSync()
                 InstrumentationRegistry.getInstrumentation().runOnMainSync {
-                    val manager = androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
-                        .getActivitiesInStage(androidx.test.runner.lifecycle.Stage.RESUMED)
-                        .filterIsInstance<com.iscolt.cardsimulator.ui.cards.CardPackManagerActivity>().single()
                     views(manager.window.decorView).first { it.contentDescription == "使用卡包：连通性演示" }.performClick()
                     assertEquals(CardPacks.DEMO, app.store.activePackId)
                 }
@@ -86,14 +89,14 @@ class CardPackDeviceTest {
         repo.delete(first.id); assertNull(repo.find(first.id)); assertNotNull(repo.find(second.id))
         assertTrue(runCatching { repo.delete(CardPacks.PERSONAL) }.isFailure)
     }
-    @Test fun migrateLegacyCardsAndKeepFileAsBackup() {
-        val dir = java.io.File(context.cacheDir, "pack-migration-" + java.util.UUID.randomUUID()).apply { mkdirs() }
+    @Test fun obsoleteCardsFileIsNotImported() {
+        val dir = java.io.File(context.cacheDir, "no-migration-" + java.util.UUID.randomUUID()).apply { mkdirs() }
         java.io.File(dir, "cards.json").writeText(ScriptCodec.encode(listOf(card("旧卡"))))
         val ctx = object : android.content.ContextWrapper(context) { override fun getFilesDir() = dir }
         val repo = CardPackRepository(ctx)
-        assertEquals("旧卡", repo.find(CardPacks.PERSONAL)!!.cards.single().name)
+        assertTrue(repo.find(CardPacks.PERSONAL)!!.cards.isEmpty())
         assertTrue(java.io.File(dir, "cards.json").exists())
-        assertEquals(1, CardPackRepository(ctx).find(CardPacks.PERSONAL)!!.cards.size)
+        assertTrue(CardPackRepository(ctx).find(CardPacks.PERSONAL)!!.cards.isEmpty())
     }
     @Test fun toolbarSwitchFiltersCardsAndRemembersPack() {
         val app = context.applicationContext as SimulatorApp

@@ -35,6 +35,7 @@ class DebugPageTest {
                 lateinit var picker: Spinner
                 lateinit var input: EditText
                 var initialLogs = 0
+                var initialManualLogs = 0
                 scenario.onActivity { activity ->
                     store.select(card.id)
                     root = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
@@ -46,6 +47,8 @@ class DebugPageTest {
                     assertEquals(0, picker.selectedItemPosition)
                     assertEquals("2 · READ RECORD · 00B20114…", picker.adapter.getItem(1))
                     initialLogs = store.logs().size
+                    // 日志会持久化；只统计本次操作新增的记录，允许在同一设备重复回归。
+                    initialManualLogs = store.logs().count { it.cardId == store.selectedId && it.kind == "手动 T" }
                     picker.setSelection(1)
                 }
                 instrument.waitForIdleSync()
@@ -69,7 +72,7 @@ class DebugPageTest {
                     assertTrue(has(root, "步骤 2 未匹配"))
                     input.setText(second.command); button(root, "发送到脚本").performClick()
                     assertTrue(has(root, "R-APDU  9000")); assertTrue(has(root, "读记录"))
-                    assertEquals(4, store.logs().count { it.cardId == store.selectedId && it.kind == "手动 T" })
+                    assertEquals(4, store.logs().count { it.cardId == store.selectedId && it.kind == "手动 T" } - initialManualLogs)
                     assertTrue(store.logs().any { it.kind == "手动 T" && it.message == "00B2021400" })
                     assertTrue(store.logs().any { it.kind == "手动 C" && it.message.contains("步骤 2 未匹配") })
                     // 模拟 NFC 端另建引擎，手动发送不能推进其步骤。

@@ -25,23 +25,22 @@ object ScriptCodec {
         return cards
     }
     private fun parseCard(json: JSONObject, builtIn: Boolean): CardScript {
-        val name = json.optString("name", json.optString("cardImg", "自定义卡片")).trim()
+        val name = json.optString("name", "自定义卡片").trim()
         require(name.isNotBlank() && name.length <= 120) { "卡片名称须为 1–120 个字符" }
-        val scheme = json.optString("scheme", json.optString("cardType", "自定义")).trim()
-        val id = json.optString("id", json.optString("cardID", "")).ifBlank {
+        val scheme = json.optString("scheme", "自定义").trim()
+        val id = json.optString("id", "").ifBlank {
             "import-" + MessageDigest.getInstance("SHA-256").digest(json.toString().toByteArray())
                 .take(10).joinToString("") { "%02x".format(it.toInt() and 255) }
         }
         require(id.matches(Regex("[A-Za-z0-9_.-]{1,100}"))) { "卡片 ID 仅允许字母、数字、下划线、点和连字符" }
-        val aidArray = json.optJSONArray("aids")
-        val aids = if (aidArray != null) (0 until aidArray.length()).map { aidArray.getString(it) }
-            else listOf(json.getString("AID"))
+        val aidArray = json.getJSONArray("aids")
+        val aids = (0 until aidArray.length()).map { aidArray.getString(it) }
         val normalizedAids = aids.map { hex(it, "AID", 5) }.distinct()
         require(normalizedAids.isNotEmpty() && normalizedAids.size <= 16 && normalizedAids.all { it.length <= 32 }) {
             "须包含 1–16 个 AID，每个 5–16 字节"
         }
-        val rulesArray = json.optJSONArray("rules")
-        val rules = if (rulesArray != null) (0 until rulesArray.length()).map { index ->
+        val rulesArray = json.getJSONArray("rules")
+        val rules = (0 until rulesArray.length()).map { index ->
             val item = rulesArray.getJSONObject(index)
             val command = hex(item.getString("command"), "规则 ${index + 1} command", 4)
             val response = hex(item.getString("response"), "规则 ${index + 1} response", 2)
@@ -50,15 +49,6 @@ object ScriptCodec {
             val mask = if (mode == MatchMode.MASK) hex(item.getString("mask"), "mask") else ""
             require(mode != MatchMode.MASK || mask.length == command.length) { "mask 必须与 command 等长" }
             ApduRule(command, response, mode, mask, item.optString("label"))
-        } else {
-            // 兼容旧版命令/回复字符串，明确使用完整匹配，不继承隐式前缀逻辑。
-            json.getString("APDU").split('|').filter { it.isNotBlank() }.mapIndexed { index, pair ->
-                val fields = pair.split(';')
-                require(fields.size == 2) { "APDU 第 ${index + 1} 组须为 T:命令;C:回复" }
-                val command = fields[0].trim().removePrefix("T:").removePrefix("t:")
-                val response = fields[1].trim().removePrefix("C:").removePrefix("c:")
-                ApduRule(hex(command, "APDU command", 4), hex(response, "APDU response", 2))
-            }
         }
         require(rules.size in 1..1000) { "每张卡须包含 1–1000 条规则" }
         return CardScript(id, name, scheme, normalizedAids, json.optString("description"), rules,

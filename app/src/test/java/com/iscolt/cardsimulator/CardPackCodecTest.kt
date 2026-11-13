@@ -28,11 +28,11 @@ class CardPackCodecTest {
             assertTrue(text, runCatching { CardPackCodec.parse(text) }.isFailure)
         }
     }
-    @Test fun legacyFileGetsIndependentPackAndDraftRetainsOwnership() {
-        val old = ScriptCodec.encode(listOf(card))
-        val pack = CardPackCodec.parse(old, "从文件命名")
+    @Test fun cardFileGetsIndependentPackAndDraftRetainsOwnership() {
+        val file = ScriptCodec.encode(listOf(card))
+        val pack = CardPackCodec.parse(file, "从文件命名")
         assertEquals("从文件命名", pack.name)
-        assertNotEquals(pack.id, CardPackCodec.parse(old).id)
+        assertNotEquals(pack.id, CardPackCodec.parse(file).id)
         val edit = CardEditorDraft.create(pack.cards.single(), false)
         assertEquals(pack.id, edit.validated().packId)
         assertEquals(pack.id, CardEditorDraft.restore(edit.state()).card.packId)

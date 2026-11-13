@@ -7,7 +7,7 @@ import android.util.Log
 import java.util.concurrent.Executors
 import java.util.concurrent.FutureTask
 
-/** 进程内只加载一次。卡包、迁移和日志在后台准备，Activity 通过可取消订阅接收结果。 */
+/** 进程内只加载一次。卡包和日志在后台准备，Activity 通过可取消订阅接收结果。 */
 class StoreLoader(load: () -> SimulatorStore) {
     private val main = Handler(Looper.getMainLooper())
     private val task = FutureTask {

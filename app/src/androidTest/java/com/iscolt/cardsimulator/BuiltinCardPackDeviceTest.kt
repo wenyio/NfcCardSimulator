@@ -52,22 +52,4 @@ class BuiltinCardPackDeviceTest {
             }
         }
     }
-    @Test fun upgradeFromRemovedPackFallsBackAndPreservesUserCards() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val dir = java.io.File(context.cacheDir, "upgrade-" + System.nanoTime()).apply { mkdirs() }
-        val prefs = context.getSharedPreferences("upgrade-" + System.nanoTime(), android.content.Context.MODE_PRIVATE)
-        // 模拟旧安装选中已移除包；使用隔离存储，不能修改用户安装实例的数据。
-        prefs.edit().putString("activePack", "bctc").putString("selected", "bctc:bctc-D00101").putBoolean("enabled", true).commit()
-        val isolated = object : android.content.ContextWrapper(context) {
-            override fun getFilesDir() = dir
-            override fun getSharedPreferences(name: String, mode: Int) = prefs
-        }
-        val user = com.iscolt.cardsimulator.core.CardScript("user", "用户卡", "其他", listOf("F001020304"), "",
-            listOf(com.iscolt.cardsimulator.core.ApduRule("00CA000000", "9000")), packId = CardPacks.PERSONAL)
-        com.iscolt.cardsimulator.data.CardPackRepository(isolated).saveEditedCard(user, null)
-        val store = com.iscolt.cardsimulator.data.SimulatorStore(isolated)
-        assertEquals(CardPacks.DEMO, store.activePackId); assertNull(store.selectedId); assertFalse(store.enabled)
-        assertEquals(user, store.findCard(user.key))
-        assertEquals(CardPacks.DEMO, prefs.getString("activePack", null)); assertFalse(prefs.contains("selected"))
-    }
 }

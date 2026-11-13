@@ -7,11 +7,11 @@
 ## 已实现
 
 - 卡片列表、筛选、新建、复制、编辑、删除；独立卡片 / APDU 编辑页、草稿恢复，卡组织下拉选择与本地新增。
-- 顶部卡包名称直达独立管理页（新建、分组、数量、使用状态、行尾操作）、JSON 整包导入/更新/导出；新建/复制默认归入当前用户包，编辑可移动所属卡包；卡片 ID 按包隔离，原子保存与旧数据迁移。
+- 顶部卡包名称直达独立管理页（新建、分组、数量、使用状态、行尾操作）、JSON 整包导入/更新/导出；新建/复制默认归入当前用户包，编辑可移动所属卡包；卡片 ID 按包隔离，原子保存。
 - HCE 支付服务，启动时注册当前 AID 和 PPSE；切卡自动停止模拟。
 - EXACT 完整匹配、MASK 掩码匹配、PREFIX 前缀匹配；按内容或按步骤执行。
 - 独立手动 APDU 会话及收发日志。
-- 可选测试场景、运行条件、导入来源与 SHA-256 追溯；旧 APDU 转换提示。
+- 可选测试场景、运行条件、导入来源与 SHA-256 追溯。
 - 按当前会话的 PDOL/CDOL 定义解释 GPO/GAC 字段差异，掩码命中仍提示固定回复限制。
 - T:/C: 交易文本导入、预览、AID 提取与错误定位。
 - 按步骤未匹配的字节差异、回复 BER-TLV 查看。
@@ -31,7 +31,7 @@
 
 使用 JDK 17，运行 `gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:exportDebugApk`。
 
-生成 artifacts/NfcCardSimulator-v1.0.0-debug.apk，使用标准 Android 调试签名。正式分发前配置并保管自己的发布签名。
+生成 artifacts/NfcCardSimulator-v1.0.0-debug.apk，使用标准 Android 调试签名。Release 使用独立本地签名，配置与备份说明见 [docs/RELEASE-SIGNING.md](docs/RELEASE-SIGNING.md)。
 
 ## 手机使用
 
@@ -45,7 +45,7 @@
 
 ## 脚本
 
-推荐 schemaVersion=2，顶层 pack（id、name、description）与 cards 数组。完整示例见 [examples/card-pack.json](examples/card-pack.json)，流程与限制见 [docs/CARD-PACKS.md](docs/CARD-PACKS.md)。旧单卡对象、数组和版本 1 仍可导入为新包。
+卡包使用 schemaVersion=2，顶层 pack（id、name、description）与 cards 数组。完整示例见 [examples/card-pack.json](examples/card-pack.json)，流程与限制见 [docs/CARD-PACKS.md](docs/CARD-PACKS.md)。标准单卡对象、卡片数组和 schemaVersion=1 的独立卡片文件可导入为新包，这是当前单卡导出的配套格式。
 
 卡片字段：id、name、scheme、aids（5–16 字节 AID 列表）、description、ordered、fallback、rules。
 规则字段：command、response、match、label；MASK 模式另需 mask。
@@ -55,13 +55,13 @@
 - EXACT 要求完整命令相等。PREFIX 显式允许后续字节不同，需谨慎使用。
 - MASK 要求 command 和 mask 等长，逐字节比较“实际值 & mask == 期望值 & mask”。FF 全比较，00 忽略。实际命令也须等长。
 - 掩码和前缀不会重新计算回复中的密文或动态签名。
-- 兼容 cardID/cardImg/cardType/AID/APDU 字段及 T:命令;C:回复|... 格式，使用完整匹配，不沿用其他工具的隐式前缀规则。
+- 不解析 cardID/cardImg/cardType/AID/APDU 等旧字段，不迁移旧 cards.json。独立 T:/C: 交易文本导入功能继续保留。
 - 单文件最大 2 MB、200 张卡，每卡最多 1000 条规则。卡片 ID 仅要求包内唯一，更新卡包须确认整包替换。最多 100 个用户包、2000 张用户卡，累计持久化数据最大 20 MB。
 
 ## 验证边界
 
-单元测试覆盖顺序、失败不推进、重置、掩码、完整匹配、格式错误、JSON 往返、无效配置、旧格式及演示卡。真实手机的默认支付路由、锁屏、射频时延及内核结果需设备测试。
+单元测试覆盖顺序、失败不推进、重置、掩码、完整匹配、格式错误、JSON 往返、无效配置、旧格式拒绝及演示卡。真实手机的默认支付路由、锁屏、射频时延及内核结果需设备测试。
 
 0.3.9 数据扩展与使用示例见 [docs/LOCAL-0.3.9.md](docs/LOCAL-0.3.9.md)，自编诊断卡见 examples/dol-diagnostic-card.json。
 
-Release 构建：`gradlew.bat :app:exportReleaseApk`，生成 `artifacts/NfcCardSimulator-v1.0.0-release-unsigned.apk`。当前未配置发布证书，产物需要签名后才能安装。
+Release 构建：`gradlew.bat :app:exportReleaseApk`，生成已签名的 `artifacts/NfcCardSimulator-v1.0.0-release.apk`。

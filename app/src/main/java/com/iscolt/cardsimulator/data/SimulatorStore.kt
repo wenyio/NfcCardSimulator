@@ -28,12 +28,6 @@ class SimulatorStore(context: Context) {
     init {
         // 模拟状态属于当前详情会话，进程重启不能恢复上次的启动状态。
         preferences.edit().remove("enabled").apply()
-        // 升级时旧内置包可能已下架，回到演示包并同步清除失效选择；不删除用户卡和日志。
-        if (repository.find(activePackId) == null) activePackId = CardPacks.DEMO
-        selectedId = selectedId?.let { findCard(it)?.key }
-        preferences.edit().putString("activePack", activePackId).apply {
-            if (selectedId == null) remove("selected") else putString("selected", selectedId)
-        }.apply()
         repository.readError?.let { log("错误", it) }
         if (selected() == null) {
             enabled = false

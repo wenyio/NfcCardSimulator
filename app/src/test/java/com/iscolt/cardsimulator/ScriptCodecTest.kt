@@ -19,11 +19,17 @@ class ScriptCodecTest {
             try { ScriptCodec.parse(input); fail("Invalid script accepted") } catch (_: IllegalArgumentException) {}
         }
     }
-    @Test fun legacyPairsRemainExactAndKeepDuplicateCommands() {
-        val text = """{"cardID":"legacy","cardImg":"Legacy","AID":"F001020304","APDU":"T:00CA000000;C:019000|T:00CA000000;C:029000"}"""
-        val card = ScriptCodec.parse(text).single()
-        assertEquals(2, card.rules.size)
-        assertTrue(card.rules.all { it.mode == MatchMode.EXACT })
+    @Test fun rejectsLegacyAliasesAndSerializedApdu() {
+        val old = """{"cardID":"old","cardImg":"Old","AID":"F001020304","APDU":"T:00CA000000;C:9000"}"""
+        assertTrue(runCatching { ScriptCodec.parse(old) }.isFailure)
+        assertTrue(runCatching { ScriptCodec.parse(sample.replace("rules", "APDU")) }.isFailure)
+    }
+    @Test fun standardRulesKeepDuplicateCommandsInOrder() {
+        val card = ScriptCodec.parse(sample).single()
+        val pair = card.copy(ordered = true, rules = listOf(ApduRule("00CA000000", "019000"), ApduRule("00CA000000", "029000")))
+        val engine = ScriptEngine(ScriptCodec.parse(ScriptCodec.encode(listOf(pair))).single())
+        assertEquals("019000", engine.exchange("00CA000000").response)
+        assertEquals("029000", engine.exchange("00CA000000").response)
     }
     @Test fun emptyPersistedCollectionIsReadableButEmptyImportIsRejected() {
         val json = ScriptCodec.encode(emptyList())

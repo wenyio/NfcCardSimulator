@@ -3,7 +3,7 @@ package com.iscolt.cardsimulator.core
 import org.json.JSONObject
 import java.util.UUID
 
-/** 卡包采用版本 2；旧单卡或列表仍可导入为新包，不依赖旧应用。 */
+/** 卡包采用版本 2；标准单卡或列表文件可导入为新包。 */
 object CardPackCodec {
     fun parse(text: String, defaultName: String = "导入卡包", builtIn: Boolean = false, allowEmpty: Boolean = false): CardPack {
         require(text.toByteArray(Charsets.UTF_8).size <= ScriptCodec.MAX_BYTES) { "文件超过 2 MB" }

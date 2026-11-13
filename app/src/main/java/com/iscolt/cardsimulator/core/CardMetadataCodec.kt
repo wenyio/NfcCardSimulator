@@ -3,7 +3,7 @@ package com.iscolt.cardsimulator.core
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** 可选扩展字段独立编解码，兼容 schemaVersion=1；旧卡片无需补齐字段。 */
+/** 可选扩展字段独立编解码；未提供 metadata 时使用空元数据。 */
 object CardMetadataCodec {
     private fun text(json: JSONObject, key: String, limit: Int = 4000): String {
         if (!json.has(key)) return ""
@@ -14,7 +14,7 @@ object CardMetadataCodec {
         if (json.has(key)) json.getJSONObject(key) else JSONObject()
 
     fun parse(card: JSONObject): CardMetadata {
-        if (!card.has("metadata")) return legacy(card)
+        if (!card.has("metadata")) return CardMetadata()
         val json = card.getJSONObject("metadata")
         val s = child(json, "source"); val t = child(json, "scenario")
         val sha = text(s, "sha256", 64)
@@ -29,19 +29,6 @@ object CardMetadataCodec {
             text(s, "originalCardId", 120), text(s, "configId", 240)),
             TestScenario(text(t, "category", 120), text(t, "purpose"), text(t, "expectedResult"),
                 text(t, "conditions"), text(t, "amount", 120), text(t, "legacyPdol"), text(t, "legacyCdol")), messages)
-    }
-
-    private fun legacy(card: JSONObject): CardMetadata {
-        if (!card.has("APDU") || card.has("rules")) return CardMetadata()
-        // 识别的是字段结构，不凭文件名断言来源软件，也不从卡片名称猜测预期结果。
-        return CardMetadata(
-            source = CardSource(format = "旧版 APDU JSON", originalCardId = text(card, "cardID", 120),
-                configId = text(card, "config", 240)),
-            scenario = TestScenario(category = text(card, "category", 120), amount = text(card, "amount", 120),
-                legacyPdol = text(card, "PDOL"), legacyCdol = text(card, "CDOL")),
-            warnings = listOf("旧版 APDU 已转为完整匹配；未复现来源工具的隐式前缀或 GAC 回退逻辑。",
-                "固定回复不会重新计算密文或动态签名；原金额、PDOL/CDOL 数据仅供核对，不自动限制交易。")
-        )
     }
 
     fun encode(value: CardMetadata): JSONObject {

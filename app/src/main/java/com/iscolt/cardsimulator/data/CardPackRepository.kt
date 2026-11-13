@@ -7,10 +7,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
-/** 用户包一次原子写入，避免导入留下半个包；迁移后仍保留旧文件作为备份。 */
+/** 用户包一次原子写入，避免导入留下半个包。 */
 class CardPackRepository(context: Context) {
     private val file = AtomicFile(File(context.filesDir, "card-packs.json"))
-    private val legacy = File(context.filesDir, "cards.json")
     private val builtins = BuiltinCardCatalog.loadPacks { context.assets.open(it).bufferedReader().use { r -> r.readText() } }
     var readError: String? = null
         private set
@@ -22,10 +21,7 @@ class CardPackRepository(context: Context) {
             val packs = root.getJSONArray("packs")
             (0 until packs.length()).map { CardPackCodec.parse(packs.getJSONObject(it).toString(), allowEmpty = true) }
         } else {
-            val old = AtomicFile(legacy)
-            val cards = if (legacy.exists() || File(legacy.path + ".bak").exists())
-                old.openRead().bufferedReader().use { ScriptCodec.parse(it.readText(), allowEmpty = true) } else emptyList()
-            listOf(CardPack(CardPacks.PERSONAL, "自建卡片", cards = cards).bound()).also { write(it) }
+            listOf(CardPack(CardPacks.PERSONAL, "自建卡片").bound()).also { write(it) }
         }
         validate(loaded)
         loaded

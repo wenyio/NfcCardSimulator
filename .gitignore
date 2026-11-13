@@ -25,3 +25,5 @@ emulator-qa*.log
 /.kotlin/
 *.jks
 *.keystore
+/.signing/
+/signing.properties

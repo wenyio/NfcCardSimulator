@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.NfcCardSimulator" parent="Base.Theme.NfcCardSimulator">
+        <!-- Android 12 的系统启动屏使用应用配色与卡片标识，避免默认白底。 -->
+        <item name="android:windowSplashScreenBackground">@color/startup_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_startup_card</item>
+    </style>
+</resources>

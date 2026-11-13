@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "id": "discover-aid-not-found",
+      "name": "Discover · AID 选择失败",
+      "scheme": "Discover",
+      "aids": [
+        "A0000001523010"
+      ],
+      "description": "自编错误路径模板，验证终端错误处理；非认证用例、非完整交易卡。",
+      "ordered": false,
+      "fallback": "6D00",
+      "rules": [
+        {
+          "command": "00A404000E325041592E5359532E4444463031",
+          "match": "PREFIX",
+          "response": "6F2D840E325041592E5359532E4444463031A51BBF0C1861164F07A000000152301050084843452044454D4F8701019000",
+          "label": "SELECT PPSE"
+        },
+        {
+          "command": "00A4040007A0000001523010",
+          "match": "PREFIX",
+          "response": "6A82",
+          "label": "Discover · AID 选择失败"
+        },
+        {
+          "command": "80A80000",
+          "match": "PREFIX",
+          "response": "6985",
+          "label": "演示卡到此结束；需要交易脚本"
+        }
+      ]
+    },
+    {
+      "id": "discover-gpo-wrong-data",
+      "name": "Discover · GPO 数据错误",
+      "scheme": "Discover",
+      "aids": [
+        "A0000001523010"
+      ],
+      "description": "自编错误路径模板，验证终端错误处理；非认证用例、非完整交易卡。",
+      "ordered": false,
+      "fallback": "6D00",
+      "rules": [
+        {
+          "command": "00A404000E325041592E5359532E4444463031",
+          "match": "PREFIX",
+          "response": "6F2D840E325041592E5359532E4444463031A51BBF0C1861164F07A000000152301050084843452044454D4F8701019000",
+          "label": "SELECT PPSE"
+        },
+        {
+          "command": "00A4040007A0000001523010",
+          "match": "PREFIX",
+          "response": "6F158407A0000001523010A50A50084843452044454D4F9000",
+          "label": "SELECT AID"
+        },
+        {
+          "command": "80A80000",
+          "match": "PREFIX",
+          "response": "6A80",
+          "label": "Discover · GPO 数据错误"
+        }
+      ]
+    }
+  ]
+}

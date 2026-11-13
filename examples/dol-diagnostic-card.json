@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "id": "dol-diagnostic-demo",
+      "name": "DOL 字段诊断示例",
+      "scheme": "Discover",
+      "aids": [
+        "F001020304"
+      ],
+      "description": "自编数据，仅演示字段差异诊断，不代表可完成支付交易。",
+      "ordered": true,
+      "fallback": "6D00",
+      "metadata": {
+        "source": {
+          "format": "自编示例"
+        },
+        "scenario": {
+          "category": "L2 调试",
+          "purpose": "观察金额和不可预知数变化",
+          "expectedResult": "输入变化时显示 9F02、9F37 差异；原始 GPO 匹配后回复 6985。",
+          "conditions": "手动调试先发送 SELECT，再发送 GPO；修改金额或随机数可查看差异。",
+          "amount": "000000000001（9F02 原始值，单位取决于币种指数）"
+        },
+        "warnings": [
+          "固定回复，不计算密文或动态签名。"
+        ]
+      },
+      "rules": [
+        {
+          "label": "选择应用并提供 PDOL 定义",
+          "command": "00A4040005F00102030400",
+          "response": "6F099F38069F02069F37049000",
+          "match": "EXACT"
+        },
+        {
+          "label": "GPO 输入：金额 + 不可预知数",
+          "command": "80A800000C830A00000000000111223344",
+          "response": "6985",
+          "match": "EXACT"
+        }
+      ]
+    }
+  ]
+}

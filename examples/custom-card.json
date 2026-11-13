@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "id": "custom-example",
+      "name": "自定义 · 导入示例",
+      "scheme": "自定义",
+      "aids": [
+        "F0010203040506"
+      ],
+      "description": "自定义 AID 的连通性示例，仅用于演示脚本导入。",
+      "ordered": false,
+      "fallback": "6D00",
+      "rules": [
+        {
+          "command": "00A4040007F0010203040506",
+          "match": "PREFIX",
+          "response": "9000",
+          "label": "选择自定义应用"
+        },
+        {
+          "command": "80CA000000",
+          "response": "010203049000",
+          "match": "EXACT",
+          "label": "读取演示数据"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 2,
+  "cards": [
+    {
+      "id": "demo-discover",
+      "name": "Discover · 连通性演示",
+      "scheme": "Discover",
+      "aids": [
+        "A0000001523010"
+      ],
+      "description": "仅验证 PPSE 和 AID 选择链路；GPO 有意返回 6985，不是可完成交易的 EMV 测试卡。请导入自己的交易脚本。",
+      "ordered": false,
+      "fallback": "6D00",
+      "rules": [
+        {
+          "command": "00A404000E325041592E5359532E4444463031",
+          "match": "PREFIX",
+          "response": "6F2D840E325041592E5359532E4444463031A51BBF0C1861164F07A000000152301050084843452044454D4F8701019000",
+          "label": "SELECT PPSE"
+        },
+        {
+          "command": "00A4040007A0000001523010",
+          "match": "PREFIX",
+          "response": "6F158407A0000001523010A50A50084843452044454D4F9000",
+          "label": "SELECT AID"
+        },
+        {
+          "command": "80A80000",
+          "match": "PREFIX",
+          "response": "6985",
+          "label": "演示卡到此结束；需要交易脚本"
+        }
+      ]
+    },
+    {
+      "id": "demo-visa",
+      "name": "Visa · 连通性演示",
+      "scheme": "Visa",
+      "aids": [
+        "A0000000031010"
+      ],
+      "description": "仅验证 PPSE 和 AID 选择链路；GPO 有意返回 6985，不是可完成交易的 EMV 测试卡。请导入自己的交易脚本。",
+      "ordered": false,
+      "fallback": "6D00",
+      "rules": [
+        {
+          "command": "00A404000E325041592E5359532E4444463031",
+          "match": "PREFIX",
+          "response": "6F2D840E325041592E5359532E4444463031A51BBF0C1861164F07A000000003101050084843452044454D4F8701019000",
+          "label": "SELECT PPSE"
+        },
+        {
+          "command": "00A4040007A0000000031010",
+          "match": "PREFIX",
+          "response": "6F158407A0000000031010A50A50084843452044454D4F9000",
+          "label": "SELECT AID"
+        },
+        {
+          "command": "80A80000",
+          "match": "PREFIX",
+          "response": "6985",
+          "label": "演示卡到此结束；需要交易脚本"
+        }
+      ]
+    },
+    {
+      "id": "demo-mastercard",
+      "name": "Mastercard · 连通性演示",
+      "scheme": "Mastercard",
+      "aids": [
+        "A0000000041010"
+      ],
+      "description": "仅验证 PPSE 和 AID 选择链路；GPO 有意返回 6985，不是可完成交易的 EMV 测试卡。请导入自己的交易脚本。",
+      "ordered": false,
+      "fallback": "6D00",
+      "rules": [
+        {
+          "command": "00A404000E325041592E5359532E4444463031",
+          "match": "PREFIX",
+          "response": "6F2D840E325041592E5359532E4444463031A51BBF0C1861164F07A000000004101050084843452044454D4F8701019000",
+          "label": "SELECT PPSE"
+        },
+        {
+          "command": "00A4040007A0000000041010",
+          "match": "PREFIX",
+          "response": "6F158407A0000000041010A50A50084843452044454D4F9000",
+          "label": "SELECT AID"
+        },
+        {
+          "command": "80A80000",
+          "match": "PREFIX",
+          "response": "6985",
+          "label": "演示卡到此结束；需要交易脚本"
+        }
+      ]
+    },
+    {
+      "id": "demo-unionpay",
+      "name": "UnionPay · 连通性演示",
+      "scheme": "UnionPay",
+      "aids": [
+        "A000000333010101"
+      ],
+      "description": "仅验证 PPSE 和 AID 选择链路；GPO 有意返回 6985，不是可完成交易的 EMV 测试卡。请导入自己的交易脚本。",
+      "ordered": false,
+      "fallback": "6D00",
+      "rules": [
+        {
+          "command": "00A404000E325041592E5359532E4444463031",
+          "match": "PREFIX",
+          "response": "6F2E840E325041592E5359532E4444463031A51CBF0C1961174F08A00000033301010150084843452044454D4F8701019000",
+          "label": "SELECT PPSE"
+        },
+        {
+          "command": "00A4040008A000000333010101",
+          "match": "PREFIX",
+          "response": "6F168408A000000333010101A50A50084843452044454D4F9000",
+          "label": "SELECT AID"
+        },
+        {
+          "command": "80A80000",
+          "match": "PREFIX",
+          "response": "6985",
+          "label": "演示卡到此结束；需要交易脚本"
+        }
+      ]
+    },
+    {
+      "id": "demo-jcb",
+      "name": "JCB · 连通性演示",
+      "scheme": "JCB",
+      "aids": [
+        "A0000000651010"
+      ],
+      "description": "仅验证 PPSE 和 AID 选择链路；GPO 有意返回 6985，不是可完成交易的 EMV 测试卡。请导入自己的交易脚本。",
+      "ordered": false,
+      "fallback": "6D00",
+      "rules": [
+        {
+          "command": "00A404000E325041592E5359532E4444463031",
+          "match": "PREFIX",
+          "response": "6F2D840E325041592E5359532E4444463031A51BBF0C1861164F07A000000065101050084843452044454D4F8701019000",
+          "label": "SELECT PPSE"
+        },
+        {
+          "command": "00A4040007A0000000651010",
+          "match": "PREFIX",
+          "response": "6F158407A0000000651010A50A50084843452044454D4F9000",
+          "label": "SELECT AID"
+        },
+        {
+          "command": "80A80000",
+          "match": "PREFIX",
+          "response": "6985",
+          "label": "演示卡到此结束；需要交易脚本"
+        }
+      ]
+    },
+    {
+      "id": "demo-amex",
+      "name": "Amex · 连通性演示",
+      "scheme": "Amex",
+      "aids": [
+        "A00000002501"
+      ],
+      "description": "仅验证 PPSE 和 AID 选择链路；GPO 有意返回 6985，不是可完成交易的 EMV 测试卡。请导入自己的交易脚本。",
+      "ordered": false,
+      "fallback": "6D00",
+      "rules": [
+        {
+          "command": "00A404000E325041592E5359532E4444463031",
+          "match": "PREFIX",
+          "response": "6F2C840E325041592E5359532E4444463031A51ABF0C1761154F06A0000000250150084843452044454D4F8701019000",
+          "label": "SELECT PPSE"
+        },
+        {
+          "command": "00A4040006A00000002501",
+          "match": "PREFIX",
+          "response": "6F148406A00000002501A50A50084843452044454D4F9000",
+          "label": "SELECT AID"
+        },
+        {
+          "command": "80A80000",
+          "match": "PREFIX",
+          "response": "6985",
+          "label": "演示卡到此结束；需要交易脚本"
+        }
+      ]
+    }
+  ],
+  "pack": {
+    "id": "connectivity-demo",
+    "name": "连通性演示",
+    "description": "验证 PPSE/AID 选择与 APDU 收发，GPO 返回 6985。"
+  }
+}

@@ -1,0 +1,27 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Generated local QA and packages
+**/build/
+/work/
+/artifacts/
+emulator-qa*.log
+
+# IDE and Kotlin machine-local caches
+/.idea/
+/.kotlin/
+*.jks
+*.keystore

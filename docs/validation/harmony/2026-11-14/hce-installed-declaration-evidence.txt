@@ -1,0 +1,35 @@
+
+          "maxChildProcess": 512,
+>         "metaData": {},
+>         "metadata": {},
+          "minCompatibleVersionCode": 1000000,
+          "moduleInfos": [
+                      "maxWindowWidth": 0,
+>                     "metaData": {
+                          "customizeData": []
+                      },
+>                     "metadata": [],
+                      "minFormHeight": 0,
+                      "minFormWidth": 0,
+                                  "ohos.want.action.home",
+>                                 "ohos.nfc.cardemulation.action.HOST_APDU_SERVICE"
+                              ],
+                              "domainVerify": false,
+                      "labelId": 0,
+>                     "metadata": [
+                          {
+                              "name": "ohos.extension.backup",
+              "mainElementName": "EntryAbility",
+>             "metadata": [],
+              "moduleArkTSMode": "dynamic",
+              "moduleName": "entry",
+              "moduleName": "entry",
+>             "name": "ohos.permission.NFC_CARD_EMULATION",
+>             "reason": "$string:nfc_card_emulation_reason",
+              "reasonId": 16777223,
+              "requiredFeature": "",
+      "reqPermissions": [
+>         "ohos.permission.NFC_CARD_EMULATION"
+      ],
+      "routerArray": [
+

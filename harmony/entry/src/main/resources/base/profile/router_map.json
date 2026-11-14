@@ -1,0 +1,24 @@
+{
+  "routerMap": [
+    {
+      "name": "CardDetail",
+      "pageSourceFile": "src/main/ets/pages/CardDetailPage.ets",
+      "buildFunction": "CardDetailBuilder"
+    },
+    {
+      "name": "CardEditor",
+      "pageSourceFile": "src/main/ets/pages/CardEditorPage.ets",
+      "buildFunction": "CardEditorBuilder"
+    },
+    {
+      "name": "PackManager",
+      "pageSourceFile": "src/main/ets/pages/PackManagerPage.ets",
+      "buildFunction": "PackManagerBuilder"
+    },
+    {
+      "name": "AllLogs",
+      "pageSourceFile": "src/main/ets/pages/AllLogsPage.ets",
+      "buildFunction": "AllLogsBuilder"
+    }
+  ]
+}

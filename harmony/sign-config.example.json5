@@ -1,0 +1,18 @@
+{
+  // 参考此模板将实际配置保存为 .sign/sign-config.json5。
+  "signingConfigs": [
+    {
+      "name": "default",
+      "type": "HarmonyOS",
+      "material": {
+        "certpath": "C:/path/to/development.cer",
+        "keyAlias": "debugKey",
+        "keyPassword": "REPLACE_LOCALLY",
+        "profile": "C:/path/to/development.p7b",
+        "signAlg": "SHA256withECDSA",
+        "storeFile": "C:/path/to/development.p12",
+        "storePassword": "REPLACE_LOCALLY"
+      }
+    }
+  ]
+}

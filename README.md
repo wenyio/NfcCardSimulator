@@ -1,6 +1,8 @@
 # NFC 卡模拟器
 
-独立 Android HCE 脚本工具，无激活流程。正式包名 `com.iscolt.cardsimulator`，调试包名 `com.iscolt.cardsimulator.debug`。
+NFC HCE 脚本工具，Android 与鸿蒙源码在同一仓库管理，分别构建。Android 正式包名 `com.iscolt.cardsimulator`，调试包名 `com.iscolt.cardsimulator.debug`；鸿蒙包名 `com.iscolt.cardsimulator.harmony`。
+
+Android Studio 打开仓库根目录；DevEco Studio 打开 [harmony](harmony/)。鸿蒙构建与签名见 [鸿蒙工程说明](harmony/README.md)，目录与 Git 管理见 [跨平台管理约定](docs/CROSS-PLATFORM-GIT.md)。下文的系统版本、构建命令与手机设置流程针对 Android，鸿蒙的平台行为以其工程说明与验证记录为准。
 
 源码入门：[阅读指南](docs/CODE-READING-GUIDE.md) · [术语表](docs/NFC-GLOSSARY.md)。
 

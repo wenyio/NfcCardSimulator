@@ -27,3 +27,23 @@ emulator-qa*.log
 *.keystore
 /.signing/
 /signing.properties
+
+# HarmonyOS: machine-local state, signing material and generated artifacts
+/harmony/.idea/
+/harmony/.hvigor/
+/harmony/.cache/
+/harmony/.sign/
+/harmony/node_modules/
+/harmony/oh_modules/
+/harmony/**/oh_modules/
+/harmony/**/.preview/
+/harmony/**/.test/
+/harmony/.appanalyzer/
+/harmony/screenshots/
+/harmony/local.properties
+*.p12
+*.p7b
+*.cer
+*.hap
+*.app
+__pycache__/

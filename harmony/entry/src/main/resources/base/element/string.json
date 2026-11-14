@@ -1,0 +1,20 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "NFC HCE 卡模拟器"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "NFC 卡模拟器"
+    },
+    {
+      "name": "nfc_card_emulation_reason",
+      "value": "用于 NFC HCE 卡模拟：注册 AID 路由，接收读卡器 APDU 并回复"
+    }
+  ]
+}

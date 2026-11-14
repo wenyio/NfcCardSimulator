@@ -33,18 +33,30 @@ class DocumentController(private val activity: AppCompatActivity, private val st
     private val logExporter = activity.registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
         if (uri != null) write(uri)
     }
+    /** 启动 SAF（Storage Access Framework，存储访问框架）的系统文件选择器；选中文档后才读取。 */
     fun import() = importer.launch(arrayOf("*/*"))
+    /** 暂存单卡 JSON 并打开系统创建文档界面；用户选定目标后由 write 写出。 */
     fun exportCard(card: CardScript) {
         stage(ScriptCodec.encode(listOf(card))); jsonExporter.launch(card.id + ".json")
     }
+    /** 暂存完整卡包 JSON 并打开系统创建文档界面，不直接写任意外部路径。 */
     fun exportPack(pack: CardPack) {
         stage(CardPackCodec.encode(pack)); jsonExporter.launch(pack.id + ".json")
     }
+    /** 按可选卡片过滤导出日志，暂存文本后请系统创建文档；null 表示全部日志。 */
     fun exportLogs(cardId: String? = null) { stage(store.logText(cardId)); logExporter.launch("nfc-apdu-log.txt") }
+    /**
+     * 保存待导出文本到内存及私有缓存，供系统返回导出结果时使用。
+     * 此处缓存写入在调用线程执行；实际目标文档写入由 write 的后台任务完成。
+     */
     private fun stage(text: String) {
         pendingExport = text
         java.io.File(activity.cacheDir, "pending-export.txt").writeText(text)
     }
+    /**
+     * 在单线程执行器中按大小上限读取文档，计算原始证据并分流 JSON 或交易文本解析。
+     * 成功后回主线程展示预览，确认保存再提交；页面销毁后不展示结果。
+     */
     private fun read(uri: Uri) {
         io.execute {
             try {
@@ -83,6 +95,10 @@ class DocumentController(private val activity: AppCompatActivity, private val st
             } catch (e: Exception) { activity.runOnUiThread { if (!activity.isDestroyed) message(activity.getString(R.string.file_import_error, e.message)) } }
         }
     }
+    /**
+     * 先捕获待导出文本快照，再后台写入系统返回的文档 URI；必要时恢复私有缓存。
+     * URI（Uniform Resource Identifier，统一资源标识符）由系统授权文档访问，不等同于本地文件路径。
+     */
     private fun write(uri: Uri) {
         val snapshot = pendingExport
         io.execute {
@@ -95,5 +111,6 @@ class DocumentController(private val activity: AppCompatActivity, private val st
             } catch (e: Exception) { activity.runOnUiThread { if (!activity.isDestroyed) message(activity.getString(R.string.file_export_error, e.message)) } }
         }
     }
+    /** 停止接受新文件任务；已提交任务继续执行，完成回调自行检查页面是否销毁。 */
     fun close() { io.shutdown() }
 }

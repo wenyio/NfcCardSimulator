@@ -19,6 +19,7 @@ class SimulationControl(private val ui: UiKit) {
     private var error: String? = null
     private var updating = false
 
+    /** 构造实际状态指示、问题入口和开关；用户手动切换才调用 switch 回调。 */
     fun show(parent: LinearLayout, switch: (Boolean) -> Unit) = with(ui) {
         panel(parent).apply {
             // 加上内容容器原有的 4dp 顶部留白，控制卡距工具栏共 16dp。
@@ -44,6 +45,7 @@ class SimulationControl(private val ui: UiKit) {
         }
     }
 
+    /** 按真实 enabled 更新开关和指示器，使用 updating 防止程序赋值再次触发业务开关。 */
     fun update(enabled: Boolean, problem: String?) = with(ui) {
         // 实际启用状态优先；失败后开关复位，问题入口只在有明确错误时出现。
         error = if (enabled) null else problem
@@ -59,5 +61,6 @@ class SimulationControl(private val ui: UiKit) {
         }
         issue?.visibility = if (error == null) View.GONE else View.VISIBLE
     }
+    /** 重绘前释放旧视图引用和错误文字，不修改实际模拟状态。 */
     fun detach() { toggle = null; indicator = null; issue = null; error = null }
 }

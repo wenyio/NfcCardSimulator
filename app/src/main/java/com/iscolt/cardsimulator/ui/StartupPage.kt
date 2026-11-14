@@ -8,6 +8,7 @@ import com.iscolt.cardsimulator.R
 
 /** 首帧即可绘制的轻量页面，不依赖卡包、日志或 NFC 系统服务。 */
 class StartupPage(private val ui: UiKit) {
+    /** 构建不依赖仓库的首屏；error 为空显示加载中，否则显示加载失败原因。 */
     fun create(error: Throwable? = null): LinearLayout = with(ui) {
         column().apply {
             setBackgroundColor(Color.rgb(241, 245, 249))

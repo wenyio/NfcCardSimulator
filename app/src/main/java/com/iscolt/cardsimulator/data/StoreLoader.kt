@@ -34,9 +34,15 @@ class StoreLoader(load: () -> SimulatorStore) {
         }
         executor.shutdown()
     }
-    /** 保留后台 HCE、编辑页和已有调用的同步入口；首页使用 whenReady，避免主线程等待。 */
+    /**
+     * 同步等待共享加载任务并返回仓库；失败重新抛出加载异常。
+     * 这是阻塞入口，HCE 回调使用它也可能等待；首页使用 whenReady 避免首屏等待。
+     */
     fun await(): SimulatorStore = task.get().getOrThrow()
-    /** 主线程订阅/取消；Activity 销毁后不再持有旧页面或重复导航。 */
+    /**
+     * 仅主线程订阅加载结果，返回取消订阅函数；结果已就绪时仍异步投递。
+     * 取消只移除回调，不取消整个进程共用的加载任务。
+     */
     fun whenReady(callback: (Result<SimulatorStore>) -> Unit): () -> Unit {
         check(Looper.myLooper() == Looper.getMainLooper())
         callbacks.add(callback)

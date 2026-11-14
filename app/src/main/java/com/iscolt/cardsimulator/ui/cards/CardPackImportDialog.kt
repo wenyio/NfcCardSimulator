@@ -12,6 +12,7 @@ import java.util.UUID
 /** 文件导入总是先预览；同编号只提示更新，不根据 ID 静默覆盖。 */
 class CardPackImportDialog(private val ui: UiKit, private val store: SimulatorStore,
     private val imported: () -> Unit, private val message: (String) -> Unit) {
+    /** 列出新建或可更新的用户包，按相同 ID 预选建议目标，下一步仍需预览确认。 */
     fun show(pack: CardPack) {
         val existing = store.packs().filter { !it.builtIn && it.id != CardPacks.PERSONAL }
         val choices = arrayOf(ui.context.getString(R.string.pack_new)) + existing.map { ui.context.getString(R.string.pack_update_choice, it.name) }.toTypedArray()
@@ -23,6 +24,10 @@ class CardPackImportDialog(private val ui: UiKit, private val store: SimulatorSt
             .setNegativeButton(R.string.action_cancel, null).create()
         dialog.show()
     }
+    /**
+     * 显示整包替换的新增、同 ID 和移除数量；确认后后台提交。
+     * 新建时遇到已有包 ID 会生成新 ID，更新时明确使用选定目标，失败不关闭表单。
+     */
     private fun preview(incoming: CardPack, old: CardPack?) = with(ui) {
         val body = column().apply { setPadding(dp(20), dp(8), dp(20), dp(8)) }
         val name = EditText(context).apply { setText(incoming.name); hint = context.getString(R.string.pack_name); isSingleLine = true }; body.addView(name)

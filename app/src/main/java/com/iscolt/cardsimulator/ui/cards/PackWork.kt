@@ -10,6 +10,10 @@ import java.util.concurrent.Executors
 internal object PackWork {
     private val executor = Executors.newSingleThreadExecutor()
 
+    /**
+     * 在共用单线程后台执行器中执行事务，主线程显示不可取消的进度并暂时锁定方向。
+     * 完成后只向仍有效的页面回调 Result，恢复方向；文件原子性由仓库负责。
+     */
     fun <T> run(activity: Activity, operation: () -> T, complete: (Result<T>) -> Unit) {
         val progress = AlertDialog.Builder(activity).setMessage(R.string.pack_saving)
             .setCancelable(false).create()

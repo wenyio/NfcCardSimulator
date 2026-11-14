@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 要求解锁是本服务配置；是否收到命令还取决于系统路由、默认支付应用和设备行为。 -->
 <host-apdu-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/hce_description" android:requireDeviceUnlock="true">
     <aid-group android:description="@string/hce_description" android:category="payment">
+        <!-- PPSE（Proximity Payment System Environment，近距离支付系统环境）：2PAY.SYS.DDF01 的字节编码。 -->
+        <!-- AID（Application Identifier，应用标识符）路由不生成回复，脚本仍须配置匹配的 SELECT 规则。 -->
         <aid-filter android:name="325041592E5359532E4444463031" />
     </aid-group>
 </host-apdu-service>

@@ -13,6 +13,10 @@ class DebugPage(private val ui: UiKit, private val store: SimulatorStore, privat
     private var engine: ScriptEngine? = null
     private var revision = -1L
     private var session = "手动"
+    /**
+     * 构造手动命令输入、发送、重置和 TLV 结果视图。
+     * 发送时按卡片身份及修订号复用或重建独立 ScriptEngine；它与真实 NFC 引擎共享算法，不共享游标。
+     */
     fun show(content: LinearLayout) = with(ui) {
         val body = column(); content.addView(ScrollView(context).apply { addView(body) })
         panel(body).apply {
@@ -32,10 +36,12 @@ class DebugPage(private val ui: UiKit, private val store: SimulatorStore, privat
             actions.action(context.getString(R.string.debug_send)) {
                 val card = store.selected()
                 if (card == null) message(context.getString(R.string.debug_select_card)) else {
+                    // 与 HCE 相同的脚本失效判断，但这里创建自己的实例，因此手动发送不推进射频步骤。
                     if (engine?.script !== card || revision != store.sessionRevision) {
                         engine = ScriptEngine(card); revision = store.sessionRevision
                         session = store.beginSession("手动", card.name)
                     }
+                    // 这里只调用内存解释器，不向真实终端发送射频报文。
                     val exchange = engine!!.exchange(input.text.toString())
                     result.text = "R-APDU  ${exchange.response}\n${exchange.rule}\n${exchange.difference}"
                     tlv.text = TlvDecoder.decodeResponse(exchange.response)

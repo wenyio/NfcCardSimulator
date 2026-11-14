@@ -10,6 +10,7 @@ import com.iscolt.cardsimulator.R
 
 /** 每次选择一笔完整交易，明确确认 AID 后才转换为顺序固定回复脚本。 */
 class TransactionImportDialog(private val ui: UiKit) {
+    /** 展示交易选择与预览，用户确认 AID 后才转换为顺序脚本并交给 onSave；不在此直接写仓库。 */
     fun show(transactions: List<CapturedTransaction>, evidence: ImportEvidence? = null, onSave: (CardScript) -> Unit) = with(ui) {
         val body = column().apply { setPadding(dp(16), 0, dp(16), 0) }
         val picker = Spinner(context).apply {
@@ -25,6 +26,7 @@ class TransactionImportDialog(private val ui: UiKit) {
         val dialog = AlertDialog.Builder(context).setTitle(R.string.transaction_import_preview)
             .setView(ScrollView(context).apply { addView(body) }).setNegativeButton(R.string.action_cancel, null)
             .setPositiveButton(R.string.transaction_import, null).create()
+        /** 切换交易后更新提取的 AID 和限长预览；存在配对问题时禁用导入，完整规则不裁剪。 */
         fun update() {
             val transaction = transactions[picker.selectedItemPosition]
             aids.setText(transaction.aids().joinToString("\n"))
@@ -35,7 +37,9 @@ class TransactionImportDialog(private val ui: UiKit) {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = transaction.issues.isEmpty() && transaction.pairs.isNotEmpty()
         }
         picker.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            /** 无选中事件时保持当前交易预览。 */
             override fun onNothingSelected(parent: AdapterView<*>?) {}
+            /** 用户选择交易后同步 AID、报文预览和是否允许导入。 */
             override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) { update() }
         }
         dialog.show()

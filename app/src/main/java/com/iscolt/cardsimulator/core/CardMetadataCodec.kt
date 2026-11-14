@@ -5,13 +5,19 @@ import org.json.JSONObject
 
 /** 可选扩展字段独立编解码；未提供 metadata 时使用空元数据。 */
 object CardMetadataCodec {
+    /** 读取可选字符串字段：缺失返回空串，存在但类型错误则拒绝，防止静默转换类型。 */
     private fun text(json: JSONObject, key: String): String {
         if (!json.has(key)) return ""
         require(json.get(key) is String) { "metadata.$key 须为字符串" }
         return json.getString(key)
     }
+    /** 限制元数据字符串的字符数，超限抛出参数异常；返回原值，不裁剪内容。 */
     private fun bounded(value: String, key: String, limit: Int = 4000): String =
         value.also { require(it.length <= limit) { "metadata.$key 过长" } }
+    /**
+     * 校验来源、场景和提示的长度及 SHA-256 格式，返回哈希已统一小写的副本。
+     * SHA-256（Secure Hash Algorithm 256-bit，256 位安全散列算法）用于来源指纹，不证明来源可信。
+     */
     fun validate(value: CardMetadata): CardMetadata {
         val s = value.source; val t = value.scenario
         val sha = bounded(s.sha256, "sha256", 64)
@@ -23,9 +29,11 @@ object CardMetadataCodec {
             scenario = TestScenario(bounded(t.category, "category", 120), bounded(t.purpose, "purpose"), bounded(t.expectedResult, "expectedResult"),
                 bounded(t.conditions, "conditions"), bounded(t.amount, "amount", 120), bounded(t.legacyPdol, "legacyPdol"), bounded(t.legacyCdol, "legacyCdol")))
     }
+    /** 取得可选子对象；缺失时返回空对象，已有字段类型不符时由 JSON 读取抛错。 */
     private fun child(json: JSONObject, key: String): JSONObject =
         if (json.has(key)) json.getJSONObject(key) else JSONObject()
 
+    /** 从卡片 JSON 读取可选元数据并校验；未提供 metadata 时返回空元数据。 */
     fun parse(card: JSONObject): CardMetadata {
         if (!card.has("metadata")) return CardMetadata()
         val json = card.getJSONObject("metadata")
@@ -41,6 +49,7 @@ object CardMetadataCodec {
                 text(t, "conditions"), text(t, "amount"), text(t, "legacyPdol"), text(t, "legacyCdol")), messages))
     }
 
+    /** 将来源、场景与提示编码为 JSON 对象；只做字段转换，不执行校验或写盘。 */
     fun encode(value: CardMetadata): JSONObject {
         val s = value.source; val t = value.scenario
         return JSONObject().put("source", JSONObject().put("format", s.format).put("fileName", s.fileName)

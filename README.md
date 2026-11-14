@@ -2,6 +2,8 @@
 
 独立 Android HCE 脚本工具，无激活流程。正式包名 `com.iscolt.cardsimulator`，调试包名 `com.iscolt.cardsimulator.debug`。
 
+源码入门：[阅读指南](docs/CODE-READING-GUIDE.md) · [术语表](docs/NFC-GLOSSARY.md)。
+
 1.0.0：minSdk 26 / targetSdk 31 / compileSdk 36，Kotlin + 原生 Android，JDK 17，Gradle 8.13。
 
 ## 已实现

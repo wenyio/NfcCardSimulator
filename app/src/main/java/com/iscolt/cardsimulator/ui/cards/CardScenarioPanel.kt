@@ -7,6 +7,7 @@ import com.iscolt.cardsimulator.R
 
 /** 场景正文只显示有效摘要，参考参数与脚本说明按需展开。 */
 class CardScenarioPanel(private val ui: UiKit) {
+    /** 显示非空场景摘要和预期结果，把参考参数及提示收进展开区；元数据仅展示，不参与模拟。 */
     fun show(parent: LinearLayout, card: CardScript) = with(ui) {
         val metadata = card.metadata
         val scenario = metadata.scenario

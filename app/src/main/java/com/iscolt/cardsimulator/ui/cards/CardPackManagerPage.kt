@@ -10,6 +10,7 @@ import com.iscolt.cardsimulator.ui.UiKit
 
 /** 点击整张卡包切换；行尾菜单单独处理，避免管理操作触发切包。 */
 class CardPackManagerPage(private val ui: UiKit) {
+    /** 清空旧视图后分组显示内置包与用户包；整行负责选包，行尾按钮单独负责菜单。 */
     fun show(parent: LinearLayout, packs: List<CardPack>, activeId: String,
         use: (CardPack) -> Unit, more: (View, CardPack) -> Unit) = with(ui) {
         parent.removeAllViews()

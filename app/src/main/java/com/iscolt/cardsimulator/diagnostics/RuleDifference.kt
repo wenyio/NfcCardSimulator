@@ -4,6 +4,10 @@ import com.iscolt.cardsimulator.core.*
 
 /** 只解释指定候选规则的差异；诊断结果绝不参与选规则或修改回复。 */
 object RuleDifference {
+    /**
+     * 逐字节比较候选规则与实际命令，MASK 模式只比较掩码选中的位；最多显示 16 处差异。
+     * 输入应已规范化且规则有效，界面字节编号从 1 开始，字符串偏移则从 0 开始。
+     */
     fun describe(rule: ApduRule, actual: String): String {
         val expected = rule.command
         val differences = (0 until minOf(expected.length, actual.length) step 2).filter { i ->

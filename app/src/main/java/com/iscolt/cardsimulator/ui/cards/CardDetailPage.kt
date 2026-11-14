@@ -8,6 +8,7 @@ import com.iscolt.cardsimulator.R
 
 /** 详情展示元数据和可展开规则，原始 JSON 作为辅助视图。 */
 class CardDetailPage(private val ui: UiKit) {
+    /** 组合卡片基本信息、场景和规则列表；仅展示与绑定编辑动作，不启动或重置模拟。 */
     fun show(content: LinearLayout, card: CardScript, edit: () -> Unit) = with(ui) {
         val body = column()
         content.addView(ScrollView(context).apply { addView(body) }, LinearLayout.LayoutParams(-1, 0, 1f))

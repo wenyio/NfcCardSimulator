@@ -23,7 +23,9 @@ class DebugCommandSelector(ui: UiKit, parent: LinearLayout, rules: List<ApduRule
         // 首项已同步填充；忽略首次布局回调，避免覆盖用户随后输入的内容。
         var selected = 0
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            /** 无选中事件时保留命令输入。 */
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+            /** 只在选择位置变化时填入规则命令并移动光标，不发送命令、不改变执行步骤。 */
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if (position != selected) {
                     selected = position

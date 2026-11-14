@@ -15,6 +15,7 @@ import com.iscolt.cardsimulator.ui.UiKit
 
 /** 规则摘要使用紧凑行，长 APDU 仅在展开后构造，避免挤占脚本总览。 */
 class RuleList(private val ui: UiKit) {
+    /** 构建规则摘要和折叠明细，展开时才拼接完整命令与回复；展开不执行规则或改变游标。 */
     fun show(parent: LinearLayout, rules: List<ApduRule>) = with(ui) {
         rules.forEachIndexed { index, rule ->
             if (index > 0) parent.addView(View(context).apply { setBackgroundColor(Color.rgb(226, 232, 240)) },

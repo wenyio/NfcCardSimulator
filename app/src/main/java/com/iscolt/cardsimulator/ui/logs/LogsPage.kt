@@ -16,6 +16,7 @@ class LogsPage(private val ui: UiKit, private val store: SimulatorStore, private
     private var text: TextView? = null
     private var scroll: ScrollView? = null
     private var cardId: String? = null
+    /** 创建日志操作区和文本视图，绑定全部或指定卡片范围后立即刷新。 */
     fun show(content: LinearLayout, cardId: String? = null) = with(ui) {
         this@LogsPage.cardId = cardId
         val actions = row()
@@ -32,6 +33,7 @@ class LogsPage(private val ui: UiKit, private val store: SimulatorStore, private
         scroll = ScrollView(context).apply { addView(text) }
         content.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f)); update()
     }
+    /** 读取日志快照，按当前卡片过滤并按连续会话展示分隔标题，最后滚动到最新记录。 */
     fun update() {
         val formatter = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.ROOT)
         var previous = ""
@@ -41,5 +43,6 @@ class LogsPage(private val ui: UiKit, private val store: SimulatorStore, private
         }.ifBlank { ui.context.getString(R.string.logs_empty) }
         scroll?.post { scroll?.fullScroll(View.FOCUS_DOWN) }
     }
+    /** 释放旧日志视图引用，避免页面重建后继续刷新已移除控件。 */
     fun detach() { text = null; scroll = null }
 }

@@ -10,6 +10,7 @@ import com.iscolt.cardsimulator.R
 
 /** 创建空包与文件导入分开；校验失败保留输入，成功后使用新包返回首页。 */
 class CardPackCreateDialog(private val ui: UiKit, private val store: SimulatorStore, private val created: () -> Unit) {
+    /** 构建空包创建表单，先校验名称，再后台保存；成功切到新包，失败保留输入。 */
     fun show() = with(ui) {
         val form = column().apply { setPadding(dp(24), dp(8), dp(24), dp(8)) }
         val name = editorField(form, context.getString(R.string.pack_name), "")

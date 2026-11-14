@@ -15,5 +15,6 @@ class CardPackSelector(ui: UiKit, parent: LinearLayout, private val packs: List<
         spinner.setSelection(packs.indexOfFirst { it.id == initial }.coerceAtLeast(0))
         parent.addView(spinner, LinearLayout.LayoutParams(-1, ui.dp(48)))
     }
+    /** 返回当前选项对应的稳定包 ID，不使用可能重名的显示名称识别归属。 */
     fun value(): String = packs[spinner.selectedItemPosition].id
 }

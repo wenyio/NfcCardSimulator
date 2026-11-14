@@ -5,7 +5,9 @@ import android.widget.LinearLayout
 import com.iscolt.cardsimulator.R
 import com.iscolt.cardsimulator.ui.UiKit
 
-/** 条件、来源等低频信息使用与规则一致的矢量箭头和可访问点击区域。 */
+/**
+ * 创建默认折叠的标题和正文容器，点击只改变可见性与无障碍描述，返回正文供调用方填充。
+ */
 internal fun expandableSection(ui: UiKit, parent: LinearLayout, title: String): LinearLayout = with(ui) {
     val body = column().apply { visibility = View.GONE }
     val arrow = android.widget.ImageView(context).apply {

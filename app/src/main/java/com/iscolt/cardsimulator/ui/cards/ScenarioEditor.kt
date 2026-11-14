@@ -17,6 +17,7 @@ class ScenarioEditor(private val ui: UiKit, parent: LinearLayout, private val or
             }
         }
     }
+    /** 读取可编辑场景说明并复制回原模型，其余来源参考字段保留；不据此推导交易数据。 */
     fun value() = original.copy(category = fields[0].text.toString(), purpose = fields[1].text.toString(),
         expectedResult = fields[2].text.toString(), conditions = fields[3].text.toString(), amount = fields[4].text.toString())
 }

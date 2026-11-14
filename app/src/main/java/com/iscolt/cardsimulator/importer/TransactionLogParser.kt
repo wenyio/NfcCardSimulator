@@ -3,9 +3,13 @@ package com.iscolt.cardsimulator.importer
 import com.iscolt.cardsimulator.core.*
 import java.util.UUID
 
+/** 从日志取得的一组完整收发；line 为原命令在源文件中的 1 起始行号，便于定位错误。 */
 data class CapturedPair(val command: String, val response: String, val line: Int)
+
+/** 一笔捕获交易及配对问题；有问题可预览，但不能直接转换为可保存卡片。 */
 data class CapturedTransaction(val pairs: List<CapturedPair>, val issues: List<String>) {
     // 仅从 SELECT 命令提取业务 AID，PPSE 不计入业务列表。
+    /** 从短格式 SELECT by name 命令提取 5～16 字节业务 AID 并去重，排除 PPSE 发现入口。 */
     fun aids(): List<String> = pairs.mapNotNull { pair ->
         val c = pair.command
         if (!c.startsWith("00A40400") || c.length < 10) null else {
@@ -14,6 +18,7 @@ data class CapturedTransaction(val pairs: List<CapturedPair>, val issues: List<S
             else c.substring(10, 10 + size * 2).takeUnless { it == PPSE }
         }
     }.distinct()
+    /** 把无错误的收发对转换为按步骤执行的固定回复卡片，再检查大小与内容；不推导动态算法。 */
     fun toCard(name: String, scheme: String, aids: List<String>): CardScript {
         require(issues.isEmpty()) { "日志有错误，不能导入" }
         val card = CardScript("log-" + UUID.randomUUID(), name, scheme, aids,
@@ -27,16 +32,25 @@ data class CapturedTransaction(val pairs: List<CapturedPair>, val issues: List<S
 
 /** 严格解析 T:/C:，不猜测方向、不补造缺失回复。 */
 object TransactionLogParser {
+    /**
+     * 严格读取 T: 终端命令与 C: 卡片回复，支持十六进制续行、注释和交易分隔。
+     * 缺失、损坏或错序记录在 issues 中；不补造回复，文件过大或无记录时直接抛异常。
+     */
     fun parse(text: String): List<CapturedTransaction> {
         require(text.toByteArray().size <= ScriptCodec.MAX_BYTES) { "日志超过 2 MB" }
         val result = mutableListOf<CapturedTransaction>()
         var pairs = mutableListOf<CapturedPair>()
         var issues = mutableListOf<String>()
+        // 一次只等待一个命令的回复；收到新命令前仍有待配对项，就记录缺失回复。
         var command: String? = null
         var commandLine = 0
         var direction: String? = null
         var buffer = StringBuilder()
         var startLine = 0
+        /**
+         * 结算当前方向缓冲，完成命令/回复配对或记录问题；新 PPSE 选择可开启下一笔交易。
+         * 无效回复也消耗待配对命令，避免后续回复被错配给上一条命令。
+         */
         fun flush() {
             val dir = direction ?: return
             val value = Hex.clean(buffer.toString())

@@ -9,6 +9,7 @@ import com.iscolt.cardsimulator.R
 /** 首页卡包名称直接打开管理页，选择与管理使用统一入口。 */
 class CardPackTitle(private val ui: UiKit, private val store: SimulatorStore,
     private val manage: () -> Unit) {
+    /** 构造首页当前包名称及应用版本区域，点击统一进入包管理页。 */
     fun title(version: String): LinearLayout = with(ui) {
         row().apply {
             minimumHeight = dp(48); isFocusable = true

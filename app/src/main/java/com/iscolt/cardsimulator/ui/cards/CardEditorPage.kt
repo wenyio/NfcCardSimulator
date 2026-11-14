@@ -11,8 +11,11 @@ import com.iscolt.cardsimulator.R
 class CardEditorPage(private val ui: UiKit, private val schemes: CardSchemeStore) {
     private lateinit var snapshotFields: () -> CardScript
     private lateinit var error: TextView
+    /** 从已构造表单读取卡片工作副本，不校验、不写盘；调用前必须先 show。 */
     fun snapshot() = snapshotFields()
+    /** 在表单顶部显示错误并滚动提示，保留当前所有输入。 */
     fun error(message: String) = error.showEditorError(message)
+    /** 构建卡片字段、执行方式和规则列表，并保存读取字段的闭包；规则增删重排先读取最新表单。 */
     fun show(parent: LinearLayout, card: CardScript, packs: List<CardPack>, editRule: (Int) -> Unit, changedRules: (CardScript) -> Unit) = with(ui) {
         val body = column().apply { setPadding(0, dp(12), 0, dp(20)) }
         parent.addView(ScrollView(context).apply { isFillViewport = true; addView(body) }, LinearLayout.LayoutParams(-1, -1))

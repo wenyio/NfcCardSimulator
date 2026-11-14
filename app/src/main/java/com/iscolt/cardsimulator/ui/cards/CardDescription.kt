@@ -9,6 +9,7 @@ import com.iscolt.cardsimulator.R
 
 /** 短说明直接显示；超过三行的说明默认收起，按实际排版判断是否需要展开入口。 */
 class CardDescription(private val ui: UiKit) {
+    /** 展示说明文字，等待最终排版后判断是否超过三行，再按需提供展开和收起入口。 */
     fun show(parent: LinearLayout, description: String) = with(ui) {
         if (description.isBlank()) return@with
         val text = label(description, 14f, muted).apply {

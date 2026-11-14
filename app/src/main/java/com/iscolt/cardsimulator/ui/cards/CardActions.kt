@@ -16,7 +16,9 @@ class CardActions(private val ui: UiKit, private val store: SimulatorStore,
     private val openEditor: (CardScript?, Boolean) -> Unit,
     private val deleted: () -> Unit, private val export: (CardScript) -> Unit,
     private val message: (String) -> Unit) {
+    /** 转交新建、编辑或复制请求，是否暂停模拟由首页进入编辑页的统一入口处理。 */
     fun edit(card: CardScript? = null, copy: Boolean = false) = openEditor(card, copy)
+    /** 显示卡片菜单；内置卡只允许复制编辑，用户卡删除经确认和后台保存成功后才刷新。 */
     fun menu(anchor: View, card: CardScript) {
         PopupMenu(ui.context, anchor).apply {
             menu.add(if (card.builtIn) R.string.card_copy_edit else R.string.card_edit).setOnMenuItemClickListener { edit(card, card.builtIn); true }

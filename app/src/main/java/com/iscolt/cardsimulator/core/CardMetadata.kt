@@ -6,6 +6,7 @@ data class CardSource(
     val originalCardId: String = "", val configId: String = ""
 )
 
+/** 测试场景的文字说明和来源参考参数；不会控制真实交易结果、字段匹配或密文运算。 */
 data class TestScenario(
     val category: String = "", val purpose: String = "", val expectedResult: String = "",
     val conditions: String = "", val amount: String = "",
@@ -13,6 +14,7 @@ data class TestScenario(
     val legacyPdol: String = "", val legacyCdol: String = ""
 )
 
+/** 随卡片保存的来源、测试说明及转换提示；与命令/回复规则分开，避免把参考数据误当执行逻辑。 */
 data class CardMetadata(
     val source: CardSource = CardSource(), val scenario: TestScenario = TestScenario(),
     val warnings: List<String> = emptyList()

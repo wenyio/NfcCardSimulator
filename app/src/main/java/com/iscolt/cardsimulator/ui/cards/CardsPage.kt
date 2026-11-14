@@ -16,6 +16,7 @@ class CardsPage(private val ui: UiKit, private val store: SimulatorStore,
     private val create: () -> Unit) {
     private var filter = "全部"
     private var packId = ""
+    /** 按当前包生成组织筛选页；包改变时重置为全部分类，页面切换只更新筛选。 */
     fun show(content: LinearLayout) = with(ui) {
         if (packId != store.activePackId) { packId = store.activePackId; filter = "全部" }
         val schemes = CardSchemes.categories(store.currentCards().map { it.scheme })
@@ -25,6 +26,7 @@ class CardsPage(private val ui: UiKit, private val store: SimulatorStore,
             showCards(page, schemes[index])
         }
     }
+    /** 显示指定分类卡片或空包引导，点击打开详情，更多按钮交给共用卡片菜单。 */
     private fun showCards(content: LinearLayout, category: String) = with(ui) {
         val list = column()
         content.addView(ScrollView(context).apply { addView(list) }, LinearLayout.LayoutParams(-1, 0, 1f))

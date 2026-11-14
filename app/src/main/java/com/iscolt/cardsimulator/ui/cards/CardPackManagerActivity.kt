@@ -19,6 +19,7 @@ class CardPackManagerActivity : AppCompatActivity() {
     private lateinit var scroll: ScrollView
     private var restoredScroll = 0
 
+    /** 创建管理页面、操作菜单和文件控制器，恢复滚动位置，新增或导入成功后返回首页。 */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val ui = UiKit(this)
@@ -45,10 +46,12 @@ class CardPackManagerActivity : AppCompatActivity() {
         }
     }
 
+    /** 管理页进入前台时重绘列表，反映已完成的包操作。 */
     override fun onResume() {
         super.onResume(); render()
     }
 
+    /** 显示当前包列表并恢复滚动；选包成功后退出管理页，不请求模拟。 */
     private fun render() {
         val position = maxOf(scroll.scrollY, restoredScroll); restoredScroll = 0
         page.show(body, store.packs(), store.activePackId, use = { pack ->
@@ -58,10 +61,13 @@ class CardPackManagerActivity : AppCompatActivity() {
         scroll.post { scroll.scrollTo(0, position) }
     }
 
+    /** 保存滚动纵坐标，供 Android 重建管理页后恢复阅读位置。 */
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putInt("scrollY", scroll.scrollY); super.onSaveInstanceState(outState)
     }
 
+    /** 关闭本页文件执行器，再执行父类销毁逻辑。 */
     override fun onDestroy() { documents.close(); super.onDestroy() }
+    /** 显示管理操作失败或文件处理结果的短提示。 */
     private fun message(text: String) { Toast.makeText(this, text, Toast.LENGTH_LONG).show() }
 }

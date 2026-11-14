@@ -40,7 +40,7 @@ class CardEditorActivity : AppCompatActivity() {
         token = savedInstanceState?.getString("draftToken") ?: token
         val restored = if (savedInstanceState != null) runCatching { JSONObject(stateFile.readText()) }.getOrNull() else null
         if (savedInstanceState != null && restored == null) {
-            Toast.makeText(this, "草稿恢复失败，请重新打开卡片", Toast.LENGTH_LONG).show(); finish(); return
+            Toast.makeText(this, R.string.editor_restore_failed, Toast.LENGTH_LONG).show(); finish(); return
         }
         if (restored != null) {
             draft = CardEditorDraft.restore(restored.getJSONObject("draft"))
@@ -71,10 +71,11 @@ class CardEditorActivity : AppCompatActivity() {
     }
     private fun render(): Unit = with(ui) {
         toolbar.removeAllViews(); body.removeAllViews()
-        toolbar.addView(icon(R.drawable.ic_back, "返回") { back() }.apply { setColorFilter(Color.WHITE) })
-        toolbar.addView(label(if (ruleIndex == null) draft.title else "APDU 规则", 20f, Color.WHITE, true), LinearLayout.LayoutParams(0, -2, 1f))
+        toolbar.addView(icon(R.drawable.ic_back, getString(R.string.action_back)) { back() }.apply { setColorFilter(Color.WHITE) })
+        val title = when (draft.title) { "新建卡片" -> getString(R.string.editor_title_new); "复制卡片" -> getString(R.string.editor_title_copy); "编辑卡片" -> getString(R.string.editor_title_edit); else -> draft.title }
+        toolbar.addView(label(if (ruleIndex == null) title else getString(R.string.editor_rule_title), 20f, Color.WHITE, true), LinearLayout.LayoutParams(0, -2, 1f))
         toolbar.addView(Button(this@CardEditorActivity).apply {
-            text = if (ruleIndex == null) "保存卡片" else "保存规则"; isAllCaps = false
+            text = getString(if (ruleIndex == null) R.string.editor_save_card else R.string.editor_save_rule); isAllCaps = false
             setTextColor(Color.WHITE); setBackgroundColor(Color.TRANSPARENT); setOnClickListener { save() }
         }, LinearLayout.LayoutParams(-2, dp(48)))
         if (ruleIndex != null) ruleForm.show(body, rule!!) else form.show(body, draft.card, store.packs().filterNot { it.builtIn },
@@ -90,14 +91,14 @@ class CardEditorActivity : AppCompatActivity() {
                 val updated = draft.card.rules.toMutableList(); val index = ruleIndex!!
                 if (index == -1) updated.add(validated) else updated[index] = validated
                 draft.card = draft.card.copy(rules = updated); closeRule()
-            }.onFailure { ruleForm.error(it.message ?: "规则校验失败") }
+            }.onFailure { ruleForm.error(it.message ?: getString(R.string.editor_rule_validation_failed)) }
         } else {
             draft.card = form.snapshot()
-            val card = runCatching { draft.validated() }.getOrElse { form.error(it.message ?: "保存失败"); return }
+            val card = runCatching { draft.validated() }.getOrElse { form.error(it.message ?: getString(R.string.editor_save_failed)); return }
             PackWork.run(this, { store.saveEditedCard(card, draft.originalKey); card }) { result ->
                 result.onSuccess {
                     stateFile.delete(); setResult(RESULT_OK, Intent().putExtra("savedCardId", it.key)); finish()
-                }.onFailure { form.error(it.message ?: "保存失败") }
+                }.onFailure { form.error(it.message ?: getString(R.string.editor_save_failed)) }
             }
         }
     }
@@ -111,8 +112,8 @@ class CardEditorActivity : AppCompatActivity() {
         }
     }
     private fun confirmDiscard(discard: () -> Unit) {
-        AlertDialog.Builder(this).setTitle("放弃未保存的修改？")
-            .setNegativeButton("继续编辑", null).setPositiveButton("放弃修改") { _, _ -> discard() }.show()
+        AlertDialog.Builder(this).setTitle(R.string.editor_discard_confirm)
+            .setNegativeButton(R.string.editor_continue, null).setPositiveButton(R.string.editor_discard) { _, _ -> discard() }.show()
     }
     private fun discard() { stateFile.delete(); finish() }
     private fun closeRule() { hideKeyboard(); ruleIndex = null; rule = null; originalRule = null; render() }

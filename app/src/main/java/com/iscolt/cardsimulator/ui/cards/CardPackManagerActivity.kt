@@ -33,14 +33,14 @@ class CardPackManagerActivity : AppCompatActivity() {
             WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
             val root = column().apply { setBackgroundColor(Color.rgb(241, 245, 249)) }
             val toolbar = row().apply { setBackgroundColor(ink); setPadding(dp(8), dp(4), dp(8), dp(4)) }
-            toolbar.addView(icon(R.drawable.ic_back, "返回") { finish() }.apply { setColorFilter(Color.WHITE) })
-            toolbar.addView(label("管理卡包", 20f, Color.WHITE, true), LinearLayout.LayoutParams(0, -2, 1f))
-            toolbar.addView(icon(R.drawable.ic_add, "添加卡包") { anchor ->
+            toolbar.addView(icon(R.drawable.ic_back, getString(R.string.action_back)) { finish() }.apply { setColorFilter(Color.WHITE) })
+            toolbar.addView(label(getString(R.string.pack_manage_title), 20f, Color.WHITE, true), LinearLayout.LayoutParams(0, -2, 1f))
+            toolbar.addView(icon(R.drawable.ic_add, getString(R.string.pack_add)) { anchor ->
                 PopupMenu(this@CardPackManagerActivity, anchor).apply {
-                    menu.add("新建卡包").setOnMenuItemClickListener {
+                    menu.add(R.string.pack_new).setOnMenuItemClickListener {
                         CardPackCreateDialog(ui, store) { finish() }.show(); true
                     }
-                    menu.add("导入文件").setOnMenuItemClickListener { documents.import(); true }
+                    menu.add(R.string.action_import_file).setOnMenuItemClickListener { documents.import(); true }
                     show()
                 }
             }.apply { setColorFilter(Color.WHITE) })
@@ -60,7 +60,7 @@ class CardPackManagerActivity : AppCompatActivity() {
         val position = maxOf(scroll.scrollY, restoredScroll); restoredScroll = 0
         page.show(body, store.packs(), store.activePackId, use = { pack ->
             // 切包只改变首页列表，不选择卡片、不请求 HCE 模拟。
-            runCatching { store.switchPack(pack.id); finish() }.onFailure { message(it.message ?: "切换失败") }
+            runCatching { store.switchPack(pack.id); finish() }.onFailure { message(it.message ?: getString(R.string.pack_switch_failed)) }
         }, more = actions::show)
         scroll.post { scroll.scrollTo(0, position) }
     }

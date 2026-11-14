@@ -17,12 +17,12 @@ internal fun expandableSection(ui: UiKit, parent: LinearLayout, title: String): 
         minimumHeight = dp(48); isFocusable = true
         addView(label(title, 14f, blue), LinearLayout.LayoutParams(0, -2, 1f))
         addView(arrow, LinearLayout.LayoutParams(dp(24), dp(24)))
-        contentDescription = "$title，展开"
+        contentDescription = context.getString(R.string.accessibility_expand, title)
         setOnClickListener {
             val expanded = body.visibility != View.VISIBLE
             body.visibility = if (expanded) View.VISIBLE else View.GONE
             arrow.rotation = if (expanded) 180f else 0f
-            contentDescription = "$title，" + if (expanded) "收起" else "展开"
+            contentDescription = context.getString(if (expanded) R.string.accessibility_collapse else R.string.accessibility_expand, title)
         }
     }
     parent.addView(header); parent.addView(body)

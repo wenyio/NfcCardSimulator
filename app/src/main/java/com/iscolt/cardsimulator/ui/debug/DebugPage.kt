@@ -17,21 +17,21 @@ class DebugPage(private val ui: UiKit, private val store: SimulatorStore, privat
         val body = column(); content.addView(ScrollView(context).apply { addView(body) })
         panel(body).apply {
             addView(row().apply {
-                addView(label("APDU 手动调试", 20f, ink, true), LinearLayout.LayoutParams(0, -2, 1f))
-                addView(icon(R.drawable.ic_info, "调试使用说明") { DebugHelp.show(context) })
+                addView(label(context.getString(R.string.debug_title), 20f, ink, true), LinearLayout.LayoutParams(0, -2, 1f))
+                addView(icon(R.drawable.ic_info, context.getString(R.string.debug_help_title)) { DebugHelp.show(context) })
             })
             val input = EditText(context).apply {
-                hint = "输入 C-APDU 十六进制"; contentDescription = "C-APDU 输入"
+                hint = context.getString(R.string.debug_input_hint); contentDescription = context.getString(R.string.debug_input_description)
                 typeface = Typeface.MONOSPACE; textSize = 14f; minLines = 2
             }
             DebugCommandSelector(ui, this, store.selected()?.rules.orEmpty(), input)
             addView(input)
-            val result = label("等待输入命令", 14f).apply { typeface = Typeface.MONOSPACE; setTextIsSelectable(true) }
+            val result = label(context.getString(R.string.debug_waiting), 14f).apply { typeface = Typeface.MONOSPACE; setTextIsSelectable(true) }
             val tlv = label("", 12f).apply { typeface = Typeface.MONOSPACE; setTextIsSelectable(true) }
             val actions = row()
-            actions.action("发送到脚本") {
+            actions.action(context.getString(R.string.debug_send)) {
                 val card = store.selected()
-                if (card == null) message("请先选择卡片") else {
+                if (card == null) message(context.getString(R.string.debug_select_card)) else {
                     if (engine?.script !== card || revision != store.sessionRevision) {
                         engine = ScriptEngine(card); revision = store.sessionRevision
                         session = store.beginSession("手动", card.name)
@@ -43,8 +43,8 @@ class DebugPage(private val ui: UiKit, private val store: SimulatorStore, privat
                     store.log("手动 C", "${exchange.response} · ${exchange.rule}\n${exchange.difference}", session)
                 }
             }
-            actions.action("重置会话") { engine = null; result.text = "手动会话已重置"; tlv.text = "" }
-            addView(actions); addView(result); addView(label("回复 TLV", 15f, ink, true)); addView(tlv)
+            actions.action(context.getString(R.string.debug_reset)) { engine = null; result.text = context.getString(R.string.debug_reset_done); tlv.text = "" }
+            addView(actions); addView(result); addView(label(context.getString(R.string.debug_reply_tlv), 15f, ink, true)); addView(tlv)
         }
     }
 }

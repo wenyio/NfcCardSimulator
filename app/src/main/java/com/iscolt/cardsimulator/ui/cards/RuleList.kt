@@ -30,8 +30,8 @@ class RuleList(private val ui: UiKit) {
                 scaleType = ImageView.ScaleType.CENTER_INSIDE
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
             }
-            val title = rule.label.ifBlank { "未命名规则" }
-            val mode = MatchingLabels.mode(rule.mode)
+            val title = rule.label.ifBlank { context.getString(R.string.rule_unnamed) }
+            val mode = MatchingLabels.mode(context, rule.mode)
             val header = row().apply {
                 minimumHeight = dp(48); isFocusable = true
                 val ripple = TypedValue()
@@ -43,7 +43,7 @@ class RuleList(private val ui: UiKit) {
                 }, LinearLayout.LayoutParams(0, -2, 1f))
                 addView(label(mode, 12f, muted).apply { setPadding(dp(8), 0, dp(4), 0) })
                 addView(arrow, LinearLayout.LayoutParams(dp(24), dp(24)).apply { leftMargin = dp(8) })
-                contentDescription = "规则 ${index + 1}：$title，$mode，展开"
+                contentDescription = context.getString(R.string.accessibility_expand, context.getString(R.string.rule_accessibility, index + 1, title, mode))
                 setOnClickListener {
                     // 展开只影响视图，不触发匹配引擎或改变当前交易步骤。
                     val expanded = details.visibility != View.VISIBLE
@@ -53,7 +53,7 @@ class RuleList(private val ui: UiKit) {
                     }.joinToString(System.lineSeparator())
                     details.visibility = if (expanded) View.VISIBLE else View.GONE
                     arrow.rotation = if (expanded) 180f else 0f
-                    contentDescription = "规则 ${index + 1}：$title，$mode，${if (expanded) "收起" else "展开"}"
+                    contentDescription = context.getString(if (expanded) R.string.accessibility_collapse else R.string.accessibility_expand, context.getString(R.string.rule_accessibility, index + 1, title, mode))
                 }
             }
             parent.addView(header, LinearLayout.LayoutParams(-1, -2))

@@ -15,6 +15,7 @@ import com.iscolt.cardsimulator.ui.cards.CardPackImportDialog
 import com.iscolt.cardsimulator.ui.cards.TransactionImportDialog
 import com.iscolt.cardsimulator.ui.cards.PackWork
 import java.util.concurrent.Executors
+import com.iscolt.cardsimulator.R
 
 /** SAF 文件访问与解析在后台执行；页面只负责触发操作。 */
 class DocumentController(private val activity: AppCompatActivity, private val storeProvider: () -> SimulatorStore,
@@ -52,10 +53,10 @@ class DocumentController(private val activity: AppCompatActivity, private val st
                     val output = java.io.ByteArrayOutputStream(); val buffer = ByteArray(8192)
                     while (true) {
                         val count = input.read(buffer); if (count < 0) break
-                        require(output.size() + count <= ScriptCodec.MAX_BYTES) { "文件超过 2 MB" }
+                        require(output.size() + count <= ScriptCodec.MAX_BYTES) { activity.getString(R.string.file_too_large) }
                         output.write(buffer, 0, count)
                     }; output.toByteArray()
-                } ?: error("无法读取文件")
+                } ?: error(activity.getString(R.string.file_read_failed))
                 val text = bytes.toString(Charsets.UTF_8).removePrefix("\uFEFF")
                 val fileName = runCatching {
                     activity.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
@@ -64,7 +65,7 @@ class DocumentController(private val activity: AppCompatActivity, private val st
                 }.getOrDefault("")
                 val evidence = ImportEvidence.from(bytes, fileName)
                 if (text.trimStart().startsWith("{") || text.trimStart().startsWith("[")) {
-                    val parsed = CardPackCodec.parse(text, fileName.substringBeforeLast(".").ifBlank { "导入卡包" })
+                    val parsed = CardPackCodec.parse(text, fileName.substringBeforeLast(".").ifBlank { activity.getString(R.string.file_imported_pack) })
                     val pack = parsed.copy(cards = parsed.cards.map { evidence.attach(it, "卡片 JSON") })
                     activity.runOnUiThread {
                         if (!activity.isDestroyed) CardPackImportDialog(UiKit(activity), store, onImported, message).show(pack)
@@ -75,12 +76,12 @@ class DocumentController(private val activity: AppCompatActivity, private val st
                         if (!activity.isDestroyed) TransactionImportDialog(UiKit(activity)).show(transactions, evidence) {
                             val card = it
                             PackWork.run(activity, { store.importPack(CardPack("pack-" + java.util.UUID.randomUUID(), card.name, cards = listOf(card))) }) { result ->
-                                result.onSuccess { onImported() }.onFailure { message(it.message ?: "导入失败") }
+                                result.onSuccess { onImported() }.onFailure { message(it.message ?: activity.getString(R.string.import_failed)) }
                             }
                         }
                     }
                 }
-            } catch (e: Exception) { activity.runOnUiThread { if (!activity.isDestroyed) message("导入失败：${e.message}") } }
+            } catch (e: Exception) { activity.runOnUiThread { if (!activity.isDestroyed) message(activity.getString(R.string.file_import_error, e.message)) } }
         }
     }
     private fun write(uri: Uri) {
@@ -90,9 +91,9 @@ class DocumentController(private val activity: AppCompatActivity, private val st
                 // 只有系统补发导出结果时才在后台恢复缓存，不拖慢每次打开首页。
                 val text = snapshot.ifBlank { java.io.File(activity.cacheDir, "pending-export.txt").readText() }
                 activity.contentResolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray(Charsets.UTF_8)) }
-                    ?: error("无法写入文件")
-                activity.runOnUiThread { if (!activity.isDestroyed) message("导出完成") }
-            } catch (e: Exception) { activity.runOnUiThread { if (!activity.isDestroyed) message("导出失败：${e.message}") } }
+                    ?: error(activity.getString(R.string.file_write_failed))
+                activity.runOnUiThread { if (!activity.isDestroyed) message(activity.getString(R.string.file_export_done)) }
+            } catch (e: Exception) { activity.runOnUiThread { if (!activity.isDestroyed) message(activity.getString(R.string.file_export_error, e.message)) } }
         }
     }
     fun close() { io.shutdown() }

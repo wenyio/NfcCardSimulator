@@ -13,12 +13,12 @@ class CardPackManagerPage(private val ui: UiKit) {
     fun show(parent: LinearLayout, packs: List<CardPack>, activeId: String,
         use: (CardPack) -> Unit, more: (View, CardPack) -> Unit) = with(ui) {
         parent.removeAllViews()
-        listOf("内置卡包" to true, "我的卡包" to false).forEach { (title, builtIn) ->
+        listOf(context.getString(R.string.pack_built_in) to true, context.getString(R.string.pack_my) to false).forEach { (title, builtIn) ->
             parent.addView(label(title, 13f, muted, true).apply { setPadding(dp(4), dp(8), 0, dp(10)) })
             packs.filter { it.builtIn == builtIn }.forEach { pack ->
                 val panel = panel(parent).apply {
                     tag = "card-pack:" + pack.id
-                    contentDescription = "使用卡包：" + pack.name
+                    contentDescription = context.getString(R.string.pack_use, pack.name)
                     isFocusable = true
                     setOnClickListener { use(pack) }
                     val ripple = android.util.TypedValue()
@@ -30,15 +30,15 @@ class CardPackManagerPage(private val ui: UiKit) {
                     maxLines = 2; ellipsize = TextUtils.TruncateAt.END
                 }, LinearLayout.LayoutParams(0, -2, 1f))
                 if (pack.id == activeId) {
-                    header.addView(label("当前使用", 12f, blue, true).apply {
+                    header.addView(label(context.getString(R.string.pack_active), 12f, blue, true).apply {
                         setPadding(dp(10), dp(6), dp(10), dp(6))
                         background = background(Color.rgb(239, 246, 255))
-                        contentDescription = "当前使用卡包：" + pack.name
+                        contentDescription = context.getString(R.string.pack_active_description, pack.name)
                     })
                 }
-                header.addView(icon(R.drawable.ic_more, "卡包操作：" + pack.name) { more(it, pack) })
+                header.addView(icon(R.drawable.ic_more, context.getString(R.string.pack_actions, pack.name)) { more(it, pack) })
                 panel.addView(header)
-                panel.addView(label(pack.cards.size.toString() + " 张卡片", 13f, muted))
+                panel.addView(label(context.getString(R.string.pack_card_count, pack.cards.size), 13f, muted))
                 if (pack.description.isNotBlank()) panel.addView(label(pack.description, 13f, muted).apply {
                     maxLines = 2; ellipsize = TextUtils.TruncateAt.END
                 })

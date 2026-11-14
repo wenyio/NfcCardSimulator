@@ -7,6 +7,7 @@ import com.iscolt.cardsimulator.core.CardSchemes
 import com.iscolt.cardsimulator.data.SimulatorStore
 import com.iscolt.cardsimulator.ui.UiKit
 import com.iscolt.cardsimulator.ui.swipePages
+import com.iscolt.cardsimulator.R
 
 /** 列表只展示识别信息，整张卡进入详情，低频操作收进菜单。 */
 class CardsPage(private val ui: UiKit, private val store: SimulatorStore,
@@ -18,7 +19,8 @@ class CardsPage(private val ui: UiKit, private val store: SimulatorStore,
     fun show(content: LinearLayout) = with(ui) {
         if (packId != store.activePackId) { packId = store.activePackId; filter = "全部" }
         val schemes = CardSchemes.categories(store.currentCards().map { it.scheme })
-        swipePages(content, schemes, schemes.indexOf(filter).coerceAtLeast(0), scrollableTabs = true,
+        val labels = schemes.map { if (it == "全部") context.getString(R.string.category_all) else it }
+        swipePages(content, labels, schemes.indexOf(filter).coerceAtLeast(0), scrollableTabs = true,
             onSelected = { filter = schemes[it] }) { index, page ->
             showCards(page, schemes[index])
         }
@@ -31,19 +33,19 @@ class CardsPage(private val ui: UiKit, private val store: SimulatorStore,
             if (!store.currentPack().builtIn) {
                 // 空包引导直接添加卡片；文件导入会创建或更新整包，由顶部入口提供。
                 panel(list).apply {
-                    addView(label("此卡包暂无卡片", 16f, ink, true))
-                    addView(row().apply { action("新建卡片", create) })
+                    addView(label(context.getString(R.string.cards_empty_pack), 16f, ink, true))
+                    addView(row().apply { action(context.getString(R.string.action_new_card), create) })
                 }
-            } else list.addView(label("暂无卡片，可新建或导入。"))
+            } else list.addView(label(context.getString(R.string.cards_empty)))
         }
         cards.forEach { card ->
             panel(list).apply {
                 val heading = row()
                 heading.addView(label(card.name, 18f, ink, true), LinearLayout.LayoutParams(0, -2, 1f))
-                heading.addView(icon(com.iscolt.cardsimulator.R.drawable.ic_more, "更多操作：" + card.name) { more(it, card) })
+                heading.addView(icon(R.drawable.ic_more, context.getString(R.string.card_more, card.name)) { more(it, card) })
                 addView(heading)
-                addView(label("${card.scheme} · ${card.rules.size} 条规则", 13f, muted))
-                contentDescription = "打开卡片：" + card.name
+                addView(label(context.getString(R.string.card_rules, card.scheme, card.rules.size), 13f, muted))
+                contentDescription = context.getString(R.string.card_open, card.name)
                 isFocusable = true; setOnClickListener { open(card) }
             }
         }

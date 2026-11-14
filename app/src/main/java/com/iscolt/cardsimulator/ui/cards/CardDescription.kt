@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.iscolt.cardsimulator.ui.UiKit
+import com.iscolt.cardsimulator.R
 
 /** 短说明直接显示；超过三行的说明默认收起，按实际排版判断是否需要展开入口。 */
 class CardDescription(private val ui: UiKit) {
@@ -13,14 +14,14 @@ class CardDescription(private val ui: UiKit) {
         val text = label(description, 14f, muted).apply {
             maxLines = 3; ellipsize = TextUtils.TruncateAt.END
         }
-        val expand = label("展开说明", 13f, blue).apply {
+        val expand = label(context.getString(R.string.description_expand), 13f, blue).apply {
             visibility = View.GONE; minHeight = dp(48); gravity = android.view.Gravity.CENTER_VERTICAL
             isFocusable = true; var expanded = false
             setOnClickListener {
                 expanded = !expanded
                 text.maxLines = if (expanded) Int.MAX_VALUE else 3
                 text.ellipsize = if (expanded) null else TextUtils.TruncateAt.END
-                (it as TextView).text = if (expanded) "收起说明" else "展开说明"
+                (it as TextView).text = context.getString(if (expanded) R.string.description_collapse else R.string.description_expand)
             }
         }
         parent.addView(text); parent.addView(expand)

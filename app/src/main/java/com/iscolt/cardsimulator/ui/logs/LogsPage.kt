@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.*
 import com.iscolt.cardsimulator.data.SimulatorStore
 import com.iscolt.cardsimulator.ui.UiKit
+import com.iscolt.cardsimulator.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -18,12 +19,12 @@ class LogsPage(private val ui: UiKit, private val store: SimulatorStore, private
     fun show(content: LinearLayout, cardId: String? = null) = with(ui) {
         this@LogsPage.cardId = cardId
         val actions = row()
-        actions.action("导出日志") { export() }
-        actions.action(if (cardId == null) "清空全部日志" else "清空本卡日志") {
+        actions.action(context.getString(R.string.logs_export)) { export() }
+        actions.action(context.getString(if (cardId == null) R.string.logs_clear_all else R.string.logs_clear_card)) {
             store.clearLogs(cardId); update()
         }
         content.addView(actions)
-        content.addView(label("最近记录按会话分组，自动保存到本机。", 12f, muted))
+        content.addView(label(context.getString(R.string.logs_help), 12f, muted))
         text = label("", 12f).apply {
             typeface = Typeface.MONOSPACE; setTextIsSelectable(true)
             setPadding(dp(12), dp(8), dp(12), dp(12)); background = background(Color.WHITE)
@@ -37,7 +38,7 @@ class LogsPage(private val ui: UiKit, private val store: SimulatorStore, private
         text?.text = store.logs().filter { cardId == null || it.cardId == cardId }.joinToString("\n\n") {
             val group = if (it.session != previous) { previous = it.session; "━━ ${it.session} ━━\n" } else ""
             group + "${formatter.format(Date(it.time))}  ${it.kind}\n${it.message}"
-        }.ifBlank { "暂无记录。NFC 收发和手动调试结果将显示在这里。" }
+        }.ifBlank { ui.context.getString(R.string.logs_empty) }
         scroll?.post { scroll?.fullScroll(View.FOCUS_DOWN) }
     }
     fun detach() { text = null; scroll = null }

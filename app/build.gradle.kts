@@ -40,7 +40,6 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            resValue("string", "app_name", "NFC 卡模拟器 · 调试")
         }
         release {
             if (releasePropertiesFile.isFile) signingConfig = signingConfigs.getByName("localRelease")

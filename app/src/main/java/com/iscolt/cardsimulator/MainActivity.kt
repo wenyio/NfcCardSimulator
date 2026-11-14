@@ -196,27 +196,27 @@ class MainActivity : AppCompatActivity() {
     private fun render(): Unit = with(ui) {
         if (!::content.isInitialized) return@with
         content.removeAllViews(); logs.detach(); simulation.detach(); toolbar.removeAllViews()
-        if (screen != Screen.CARDS) toolbar.addView(icon(R.drawable.ic_back, "返回") { onBackPressedDispatcher.onBackPressed() })
+        if (screen != Screen.CARDS) toolbar.addView(icon(R.drawable.ic_back, getString(R.string.action_back)) { onBackPressedDispatcher.onBackPressed() })
         val card = session.cardId?.let(store::findCard)
-        val title = when (screen) { Screen.CARDS -> "NFC 卡模拟器"; Screen.DETAIL -> card?.name ?: "卡片详情"; Screen.LOGS -> "全部日志" }
+        val title = when (screen) { Screen.CARDS -> getString(R.string.app_name); Screen.DETAIL -> card?.name ?: getString(R.string.page_card_details); Screen.LOGS -> getString(R.string.page_all_logs) }
         if (screen == Screen.CARDS) {
             toolbar.addView(packs.title(packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()), LinearLayout.LayoutParams(0, -2, 1f))
         } else toolbar.addView(label(title, 20f, Color.WHITE, true).apply {
             maxLines = 1; ellipsize = android.text.TextUtils.TruncateAt.END
         }, LinearLayout.LayoutParams(0, -2, 1f))
         if (screen == Screen.CARDS) {
-            toolbar.addView(icon(R.drawable.ic_add, "添加卡片") { anchor ->
+            toolbar.addView(icon(R.drawable.ic_add, getString(R.string.action_add_card)) { anchor ->
                 PopupMenu(this@MainActivity, anchor).apply {
-                    menu.add("新建卡片").setOnMenuItemClickListener { actions.edit(); true }
-                    menu.add("导入文件").setOnMenuItemClickListener { documents.import(); true }
+                    menu.add(R.string.action_new_card).setOnMenuItemClickListener { actions.edit(); true }
+                    menu.add(R.string.action_import_file).setOnMenuItemClickListener { documents.import(); true }
                     show()
                 }
             })
-            toolbar.addView(icon(R.drawable.ic_logs, "全部日志") { screen = Screen.LOGS; render() })
-            toolbar.addView(icon(R.drawable.ic_settings, "设备设置") { settings(it) })
+            toolbar.addView(icon(R.drawable.ic_logs, getString(R.string.page_all_logs)) { screen = Screen.LOGS; render() })
+            toolbar.addView(icon(R.drawable.ic_settings, getString(R.string.action_settings)) { settings(it) })
         } else if (screen == Screen.DETAIL && card != null) {
-            toolbar.addView(icon(R.drawable.ic_settings, "设备设置") { settings(it) })
-            toolbar.addView(icon(R.drawable.ic_more, "卡片操作") { actions.menu(it, card) })
+            toolbar.addView(icon(R.drawable.ic_settings, getString(R.string.action_settings)) { settings(it) })
+            toolbar.addView(icon(R.drawable.ic_more, getString(R.string.action_card_menu)) { actions.menu(it, card) })
         }
         for (i in 0 until toolbar.childCount) (toolbar.getChildAt(i) as? ImageButton)?.imageTintList =
             android.content.res.ColorStateList.valueOf(Color.WHITE)
@@ -225,7 +225,7 @@ class MainActivity : AppCompatActivity() {
             Screen.LOGS -> logs.show(content)
             Screen.DETAIL -> if (card == null) showList() else {
                 simulation.show(content) { enabled -> session.setRequested(enabled); updateStatus() }
-                swipePages(content, listOf("详情", "调试", "日志"), detailTab,
+                swipePages(content, listOf(getString(R.string.tab_details), getString(R.string.tab_debug), getString(R.string.tab_logs)), detailTab,
                     onSelected = { detailTab = it; updateStatus(); logs.update() }) { index, page ->
                     when (index) {
                         0 -> detail.show(page, card) { actions.edit(card, card.builtIn) }

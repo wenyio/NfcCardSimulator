@@ -26,17 +26,17 @@ class SimulationControl(private val ui: UiKit) {
             addView(row().apply {
                 indicator = View(context).apply { importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES }
                 addView(indicator, LinearLayout.LayoutParams(dp(10), dp(10)).apply { rightMargin = dp(10) })
-                addView(label("卡片模拟", 16f))
-                issue = icon(R.drawable.ic_error_outline, "查看模拟问题") {
+                addView(label(context.getString(R.string.sim_title), 16f))
+                issue = icon(R.drawable.ic_error_outline, context.getString(R.string.sim_issue)) {
                     error?.let { reason ->
-                        AlertDialog.Builder(context).setTitle("模拟未启动").setMessage(reason)
-                            .setPositiveButton("知道了", null).show()
+                        AlertDialog.Builder(context).setTitle(R.string.sim_failed).setMessage(reason)
+                            .setPositiveButton(R.string.sim_ok, null).show()
                     }
                 }.apply { imageTintList = ColorStateList.valueOf(Color.rgb(180, 83, 9)) }
                 addView(issue)
                 addView(View(context), LinearLayout.LayoutParams(0, 1, 1f))
                 toggle = SwitchCompat(context).apply {
-                    contentDescription = "卡片模拟开关"; minHeight = dp(48)
+                    contentDescription = context.getString(R.string.sim_switch); minHeight = dp(48)
                     setOnCheckedChangeListener { _, checked -> if (!updating) switch(checked) }
                 }
                 addView(toggle, LinearLayout.LayoutParams(-2, dp(48)))
@@ -55,7 +55,7 @@ class SimulationControl(private val ui: UiKit) {
                     setColor(Color.TRANSPARENT); setStroke(dp(1), muted)
                 }
             }
-            contentDescription = if (enabled) "正在模拟" else "模拟未运行"
+            contentDescription = context.getString(if (enabled) R.string.sim_running else R.string.sim_stopped)
         }
         issue?.visibility = if (error == null) View.GONE else View.VISIBLE
     }

@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">NFC 卡模拟器</string>
+    <string name="hce_description">NFC 卡模拟器</string>
+    <string name="pack_saving">正在保存卡包…</string>
+    <string name="startup_loading">正在加载卡片…</string>
+    <string name="startup_failed">卡片加载失败，请重新打开应用</string>
+    <string name="settings_nfc">NFC 设置</string>
+    <string name="settings_payment">默认支付设置</string>
+    <string name="settings_failed">无法打开系统设置</string>
+    <string name="logs_export">导出日志</string>
+    <string name="logs_clear_all">清空全部日志</string>
+    <string name="logs_clear_card">清空本卡日志</string>
+    <string name="logs_help">最近记录按会话分组，自动保存到本机。</string>
+    <string name="logs_empty">暂无记录。NFC 收发和手动调试结果将显示在这里。</string>
+    <string name="sim_title">卡片模拟</string>
+    <string name="sim_issue">查看模拟问题</string>
+    <string name="sim_failed">模拟未启动</string>
+    <string name="sim_ok">知道了</string>
+    <string name="sim_switch">卡片模拟开关</string>
+    <string name="sim_running">正在模拟</string>
+    <string name="sim_stopped">模拟未运行</string>
+    <string name="action_back">返回</string>
+    <string name="action_new_card">新建卡片</string>
+    <string name="action_import_file">导入文件</string>
+    <string name="action_add_card">添加卡片</string>
+    <string name="action_settings">设备设置</string>
+    <string name="action_card_menu">卡片操作</string>
+    <string name="page_all_logs">全部日志</string>
+    <string name="page_card_details">卡片详情</string>
+    <string name="tab_details">详情</string>
+    <string name="tab_debug">调试</string>
+    <string name="tab_logs">日志</string>
+</resources>

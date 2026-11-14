@@ -1,5 +1,33 @@
 <resources>
-    <string name="app_name">NFC 卡模拟器</string>
-    <string name="hce_description">NFC 卡模拟器</string>
-    <string name="pack_saving">正在保存卡包…</string>
+    <string name="app_name">NFC Card Simulator</string>
+    <string name="hce_description">NFC Card Simulator</string>
+    <string name="pack_saving">Saving card pack…</string>
+    <string name="startup_loading">Loading cards…</string>
+    <string name="startup_failed">Could not load cards. Reopen the app.</string>
+    <string name="settings_nfc">NFC settings</string>
+    <string name="settings_payment">Default payment settings</string>
+    <string name="settings_failed">Unable to open system settings</string>
+    <string name="logs_export">Export logs</string>
+    <string name="logs_clear_all">Clear all logs</string>
+    <string name="logs_clear_card">Clear this card’s logs</string>
+    <string name="logs_help">Recent entries are grouped by session and saved on this device.</string>
+    <string name="logs_empty">No entries yet. NFC exchanges and manual debug results will appear here.</string>
+    <string name="sim_title">Card emulation</string>
+    <string name="sim_issue">View emulation issue</string>
+    <string name="sim_failed">Emulation not started</string>
+    <string name="sim_ok">OK</string>
+    <string name="sim_switch">Card emulation switch</string>
+    <string name="sim_running">Emulation active</string>
+    <string name="sim_stopped">Emulation inactive</string>
+    <string name="action_back">Back</string>
+    <string name="action_new_card">New card</string>
+    <string name="action_import_file">Import file</string>
+    <string name="action_add_card">Add card</string>
+    <string name="action_settings">Device settings</string>
+    <string name="action_card_menu">Card actions</string>
+    <string name="page_all_logs">All logs</string>
+    <string name="page_card_details">Card details</string>
+    <string name="tab_details">Details</string>
+    <string name="tab_debug">Debug</string>
+    <string name="tab_logs">Logs</string>
 </resources>

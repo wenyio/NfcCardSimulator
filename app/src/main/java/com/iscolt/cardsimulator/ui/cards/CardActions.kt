@@ -1,6 +1,7 @@
 package com.iscolt.cardsimulator.ui.cards
 
 import android.app.AlertDialog
+import android.app.Activity
 import android.view.View
 import android.widget.PopupMenu
 import com.iscolt.cardsimulator.ui.JsonViewer
@@ -24,7 +25,9 @@ class CardActions(private val ui: UiKit, private val store: SimulatorStore,
             if (!card.builtIn) menu.add("删除卡片").setOnMenuItemClickListener {
                 AlertDialog.Builder(ui.context).setTitle("删除此卡片？").setMessage(card.name)
                     .setNegativeButton("取消", null).setPositiveButton("删除") { _, _ ->
-                        runCatching { store.delete(card.key); deleted() }.onFailure { message(it.message ?: "删除失败") }
+                        PackWork.run(ui.context as Activity, { store.delete(card.key) }) { result ->
+                            result.onSuccess { deleted() }.onFailure { message(it.message ?: "删除失败") }
+                        }
                     }.show(); true
             }
             show()

@@ -2,6 +2,8 @@ package com.iscolt.cardsimulator
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.*
 import androidx.activity.OnBackPressedCallback
@@ -65,7 +67,22 @@ class MainActivity : AppCompatActivity() {
         }
         editorPending = false; session.editing(false); render()
     }
-    private val listener: () -> Unit = { updateStatus(); if (screen == Screen.LOGS || (screen == Screen.DETAIL && detailTab == 2)) logs.update() }
+    private val logRefreshHandler = Handler(Looper.getMainLooper())
+    private var logRefreshPending = false
+    private val refreshLogs = Runnable {
+        logRefreshPending = false
+        if (resumed && (screen == Screen.LOGS || (screen == Screen.DETAIL && detailTab == 2))) logs.update()
+    }
+    private val listener: () -> Unit = {
+        updateStatus()
+        if (screen == Screen.LOGS || (screen == Screen.DETAIL && detailTab == 2)) {
+            // 合并连续 APDU 通知；日志本身仍逐条保存。
+            if (!logRefreshPending) {
+                logRefreshPending = true
+                logRefreshHandler.postDelayed(refreshLogs, 150)
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pendingState = savedInstanceState
@@ -136,9 +153,12 @@ class MainActivity : AppCompatActivity() {
     private fun resumeSession() {
         store.addListener(listener)
         session.foreground(screen == Screen.DETAIL); updateStatus()
+        if (screen == Screen.LOGS || (screen == Screen.DETAIL && detailTab == 2)) logs.update()
     }
     override fun onPause() {
         resumed = false
+        logRefreshHandler.removeCallbacks(refreshLogs)
+        logRefreshPending = false
         if (initialized) store.removeListener(listener)
         // 退出可见详情即停止，包括切到后台；onResume 根据当前页面决定是否恢复。
         if (initialized) session.foreground(false)

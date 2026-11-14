@@ -1,6 +1,7 @@
 package com.iscolt.cardsimulator.ui.cards
 
 import android.app.AlertDialog
+import android.app.Activity
 import android.view.View
 import android.widget.*
 import com.iscolt.cardsimulator.ui.JsonViewer
@@ -34,8 +35,11 @@ class CardPackActions(private val ui: UiKit, private val store: SimulatorStore,
         val dialog = AlertDialog.Builder(context).setTitle("重命名卡包").setView(form)
             .setNegativeButton("取消", null).setPositiveButton("保存", null).create()
         dialog.setOnShowListener { dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            runCatching { store.renamePack(pack.id, input.text.toString()) }
-                .onSuccess { dialog.dismiss(); changed() }.onFailure { input.error = it.message }
+            val value = input.text.toString()
+            if (runCatching { CardPacks.validateName(value) }.onFailure { input.error = it.message }.isFailure) return@setOnClickListener
+            PackWork.run(context as Activity, { store.renamePack(pack.id, value) }) { result ->
+                result.onSuccess { dialog.dismiss(); changed() }.onFailure { input.error = it.message }
+            }
         } }
         dialog.show()
     }
@@ -44,8 +48,9 @@ class CardPackActions(private val ui: UiKit, private val store: SimulatorStore,
         AlertDialog.Builder(ui.context).setTitle("删除整个卡包？")
             .setMessage(pack.name + " · " + pack.cards.size + " 张卡片；已保存的日志保留。")
             .setNegativeButton("取消", null).setPositiveButton("删除") { _, _ ->
-                runCatching { store.deletePack(pack.id) }.onSuccess { changed() }
-                    .onFailure { message(it.message ?: "删除失败") }
+                PackWork.run(ui.context as Activity, { store.deletePack(pack.id) }) { result ->
+                    result.onSuccess { changed() }.onFailure { message(it.message ?: "删除失败") }
+                }
             }.show()
     }
 }

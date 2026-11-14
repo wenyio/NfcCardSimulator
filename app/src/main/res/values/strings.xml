@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">NFC 卡模拟器</string>
     <string name="hce_description">NFC 卡模拟器</string>
+    <string name="pack_saving">正在保存卡包…</string>
 </resources>

@@ -14,7 +14,7 @@ import java.util.concurrent.CopyOnWriteArraySet
 class SimulatorStore(context: Context) {
     private val preferences = context.getSharedPreferences("simulator", Context.MODE_PRIVATE)
     private val repository = CardPackRepository(context)
-    var activePackId: String = preferences.getString("activePack", CardPacks.DEMO) ?: CardPacks.DEMO
+    @Volatile var activePackId: String = preferences.getString("activePack", CardPacks.DEMO) ?: CardPacks.DEMO
         private set
     private val history = LogRepository(File(context.filesDir, "history.json"))
     private val listeners = CopyOnWriteArraySet<() -> Unit>()
@@ -34,13 +34,13 @@ class SimulatorStore(context: Context) {
             preferences.edit().putBoolean("enabled", false).apply()
         }
     }
-    @Synchronized fun packs() = repository.packs()
-    @Synchronized fun currentPack() = repository.find(activePackId) ?: repository.find(CardPacks.DEMO)!!
-    @Synchronized fun currentCards() = currentPack().cards
-    @Synchronized fun cards(): List<CardScript> = repository.cards()
-    @Synchronized fun findCard(key: String): CardScript? = cards().firstOrNull { it.key == key }
+    fun packs() = repository.packs()
+    fun currentPack() = repository.find(activePackId) ?: repository.find(CardPacks.DEMO)!!
+    fun currentCards() = currentPack().cards
+    fun cards(): List<CardScript> = repository.cards()
+    fun findCard(key: String): CardScript? = cards().firstOrNull { it.key == key }
         ?: cards().filter { it.id == key }.singleOrNull()
-    @Synchronized fun selected(): CardScript? = selectedId?.let(::findCard)
+    fun selected(): CardScript? = selectedId?.let(::findCard)
     @Synchronized fun select(id: String) {
         val card = requireNotNull(findCard(id)) { "卡片不存在或编号不唯一" }
         selectedId = card.key

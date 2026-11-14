@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">NFC Card Simulator</string>
+    <string name="hce_description">NFC Card Simulator</string>
+    <string name="pack_saving">Saving card pack…</string>
+</resources>

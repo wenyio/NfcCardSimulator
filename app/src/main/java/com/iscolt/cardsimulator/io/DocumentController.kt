@@ -13,6 +13,7 @@ import com.iscolt.cardsimulator.importer.ImportEvidence
 import com.iscolt.cardsimulator.ui.UiKit
 import com.iscolt.cardsimulator.ui.cards.CardPackImportDialog
 import com.iscolt.cardsimulator.ui.cards.TransactionImportDialog
+import com.iscolt.cardsimulator.ui.cards.PackWork
 import java.util.concurrent.Executors
 
 /** SAF 文件访问与解析在后台执行；页面只负责触发操作。 */
@@ -72,7 +73,10 @@ class DocumentController(private val activity: AppCompatActivity, private val st
                     val transactions = TransactionLogParser.parse(text)
                     activity.runOnUiThread {
                         if (!activity.isDestroyed) TransactionImportDialog(UiKit(activity)).show(transactions, evidence) {
-                            store.importPack(CardPack("pack-" + java.util.UUID.randomUUID(), it.name, cards = listOf(it))); onImported()
+                            val card = it
+                            PackWork.run(activity, { store.importPack(CardPack("pack-" + java.util.UUID.randomUUID(), card.name, cards = listOf(card))) }) { result ->
+                                result.onSuccess { onImported() }.onFailure { message(it.message ?: "导入失败") }
+                            }
                         }
                     }
                 }

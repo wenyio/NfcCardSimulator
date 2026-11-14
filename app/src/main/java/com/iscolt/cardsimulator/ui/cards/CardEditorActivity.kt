@@ -93,10 +93,12 @@ class CardEditorActivity : AppCompatActivity() {
             }.onFailure { ruleForm.error(it.message ?: "规则校验失败") }
         } else {
             draft.card = form.snapshot()
-            runCatching { val validated = draft.validated(); store.saveEditedCard(validated, draft.originalKey); validated }
-                .onSuccess {
+            val card = runCatching { draft.validated() }.getOrElse { form.error(it.message ?: "保存失败"); return }
+            PackWork.run(this, { store.saveEditedCard(card, draft.originalKey); card }) { result ->
+                result.onSuccess {
                     stateFile.delete(); setResult(RESULT_OK, Intent().putExtra("savedCardId", it.key)); finish()
                 }.onFailure { form.error(it.message ?: "保存失败") }
+            }
         }
     }
     private fun back() {

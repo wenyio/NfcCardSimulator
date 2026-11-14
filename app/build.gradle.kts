@@ -44,7 +44,8 @@ android {
         }
         release {
             if (releasePropertiesFile.isFile) signingConfig = signingConfigs.getByName("localRelease")
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

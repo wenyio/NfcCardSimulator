@@ -13,7 +13,7 @@ class CardPackRepository(context: Context) {
     private val builtins = BuiltinCardCatalog.loadPacks { context.assets.open(it).bufferedReader().use { r -> r.readText() } }
     var readError: String? = null
         private set
-    private var custom: List<CardPack>
+    @Volatile private var custom: List<CardPack>
     init {
         custom = try { val loaded = if (file.baseFile.exists() || File(file.baseFile.path + ".bak").exists()) {
             val root = file.openRead().bufferedReader().use { JSONObject(it.readText()) }

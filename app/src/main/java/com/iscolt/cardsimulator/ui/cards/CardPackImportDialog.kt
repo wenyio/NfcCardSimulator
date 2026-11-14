@@ -1,6 +1,7 @@
 package com.iscolt.cardsimulator.ui.cards
 
 import android.app.AlertDialog
+import android.app.Activity
 import android.widget.*
 import com.iscolt.cardsimulator.core.*
 import com.iscolt.cardsimulator.data.SimulatorStore
@@ -37,11 +38,15 @@ class CardPackImportDialog(private val ui: UiKit, private val store: SimulatorSt
             .setView(ScrollView(context).apply { addView(body) }).setNegativeButton("取消", null)
             .setPositiveButton("确认导入", null).create()
         dialog.setOnShowListener { dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            runCatching {
+            val value = name.text.toString()
+            PackWork.run(context as Activity, {
                 val id = if (old == null && store.packs().any { it.id == incoming.id }) "pack-" + UUID.randomUUID() else incoming.id
-                val pack = incoming.copy(id = id, name = CardPacks.validateName(name.text.toString()))
-                store.importPack(pack, old?.id); dialog.dismiss(); imported()
-            }.onFailure { name.error = it.message; message(it.message ?: "导入失败") }
+                val pack = incoming.copy(id = id, name = CardPacks.validateName(value))
+                store.importPack(pack, old?.id)
+            }) { result ->
+                result.onSuccess { dialog.dismiss(); imported() }
+                    .onFailure { name.error = it.message; message(it.message ?: "导入失败") }
+            }
         } }; dialog.show()
     }
 }

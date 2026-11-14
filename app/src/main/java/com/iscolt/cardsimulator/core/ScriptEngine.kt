@@ -11,13 +11,16 @@ import com.iscolt.cardsimulator.diagnostics.DolDiagnostics
 class ScriptEngine(val script: CardScript) {
     // 当前待执行步骤的下标，从 0 开始；只有 ordered=true 时参与选规则。
     private var cursor = 0
+
     // DOL（Data Object List，数据对象列表）诊断记录本会话已经得到的字段布局。
     private val dol = DolDiagnostics()
+
     /** 把顺序游标归零并清除本会话学习到的 DOL 定义及命令次数；不修改脚本。 */
     fun reset() {
         cursor = 0
         dol.reset()
     }
+
     /**
      * 处理一条命令，返回规则的固定回复或兜底回复，并附加诊断文字。
      * 顺序模式只比较当前步骤，命中才推进；内容模式取首条命中规则。诊断不改变选规则和回复。
@@ -31,8 +34,9 @@ class ScriptEngine(val script: CardScript) {
             return Exchange("6700", "APDU 长度或格式错误", false)
         // SELECT 会清空诊断所学定义，但不会清空顺序脚本游标，两类状态不可混为一谈。
         dol.beforeCommand(command)
-        val rule = if (script.ordered) script.rules.getOrNull(cursor)?.takeIf { it.matches(command) }
-                   else script.rules.firstOrNull { it.matches(command) }
+        val rule =
+            if (script.ordered) script.rules.getOrNull(cursor)?.takeIf { it.matches(command) }
+            else script.rules.firstOrNull { it.matches(command) }
         if (rule == null) {
             // GPO（Get Processing Options，获取处理选项）常以 80 A8 开头；
             // GAC 是本项目对 GENERATE AC（Generate Application Cryptogram，生成应用密文）的简称，常以 80 AE 开头。
@@ -40,14 +44,20 @@ class ScriptEngine(val script: CardScript) {
             // 候选绝不参与匹配、推进游标或修改回复，避免诊断改变模拟行为。
             val expected = if (script.ordered) script.rules.getOrNull(cursor) else {
                 if (command.startsWith("80A8") || command.startsWith("80AE"))
-                    script.rules.filter { it.command.take(8) == command.take(8) }.singleOrNull() else null
+                    script.rules.filter { it.command.take(8) == command.take(8) }
+                        .singleOrNull() else null
             }
             val detail = expected?.let {
                 listOf(RuleDifference.describe(it, command), dol.describe(it, command, false))
                     .filter { text -> text.isNotBlank() }.joinToString("\n")
             } ?: if (script.ordered) "所有步骤已执行，请重置会话"
-                else "共 ${script.rules.size} 条规则，无唯一诊断候选；可切换顺序模式定位差异"
-            return Exchange(script.fallback, if (script.ordered) "步骤 ${cursor + 1} 未匹配" else "无匹配规则", false, detail)
+            else "共 ${script.rules.size} 条规则，无唯一诊断候选；可切换顺序模式定位差异"
+            return Exchange(
+                script.fallback,
+                if (script.ordered) "步骤 ${cursor + 1} 未匹配" else "无匹配规则",
+                false,
+                detail
+            )
         }
         // 后置 ++ 先取得本次索引再推进；只有走到命中分支才执行，失败回复不消耗步骤。
         val index = if (script.ordered) cursor++ else script.rules.indexOf(rule)

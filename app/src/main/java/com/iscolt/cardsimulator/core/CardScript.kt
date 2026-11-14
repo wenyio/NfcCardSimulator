@@ -28,10 +28,11 @@ data class ApduRule(
             // and 是按位与：掩码位为 1 才比较，为 0 则忽略。FF 比较全部位，00 忽略整字节。
             // 例如期望 A0、实际 AF、掩码 F0，双方与 F0 后均为 A0，因此该字节匹配。
             (input.substring(offset, offset + 2).toInt(16) and bits) ==
-                (command.substring(offset, offset + 2).toInt(16) and bits)
+                    (command.substring(offset, offset + 2).toInt(16) and bits)
         }
     }
 }
+
 /**
  * 一张模拟卡的配置，而非实体卡芯片的完整实现。
  * aids 是 AID（Application Identifier，应用标识符）列表，启动时交给 Android 注册路由。
@@ -50,4 +51,9 @@ data class CardScript(
 }
 
 /** 一次命令处理结果：response 用于回复，rule/difference 用于说明，matched 表示是否实际命中规则。 */
-data class Exchange(val response: String, val rule: String, val matched: Boolean, val difference: String = "")
+data class Exchange(
+    val response: String,
+    val rule: String,
+    val matched: Boolean,
+    val difference: String = ""
+)

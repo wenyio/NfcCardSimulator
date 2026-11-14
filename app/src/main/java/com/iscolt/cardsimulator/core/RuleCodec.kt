@@ -10,11 +10,14 @@ object RuleCodec {
             .put("match", rule.mode.name).put("label", rule.label).apply {
                 if (draft || rule.mode == MatchMode.MASK) put("mask", rule.mask)
             }
+
     /**
      * 按当前字段名读取规则，不执行十六进制或长度校验，允许编辑草稿包含未完成输入。
      * 未显式传 mode 时读取必需的 match 枚举名；导入入口另行处理默认值并校验。
      */
     fun decode(json: JSONObject, mode: MatchMode = MatchMode.valueOf(json.getString("match"))) =
-        ApduRule(json.getString("command"), json.getString("response"), mode,
-            json.optString("mask"), json.optString("label"))
+        ApduRule(
+            json.getString("command"), json.getString("response"), mode,
+            json.optString("mask"), json.optString("label")
+        )
 }

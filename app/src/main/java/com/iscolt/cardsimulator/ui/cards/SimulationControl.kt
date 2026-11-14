@@ -25,12 +25,17 @@ class SimulationControl(private val ui: UiKit) {
             // 加上内容容器原有的 4dp 顶部留白，控制卡距工具栏共 16dp。
             (layoutParams as LinearLayout.LayoutParams).topMargin = dp(12)
             addView(row().apply {
-                indicator = View(context).apply { importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES }
-                addView(indicator, LinearLayout.LayoutParams(dp(10), dp(10)).apply { rightMargin = dp(10) })
+                indicator = View(context).apply {
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                }
+                addView(
+                    indicator,
+                    LinearLayout.LayoutParams(dp(10), dp(10)).apply { rightMargin = dp(10) })
                 addView(label(context.getString(R.string.sim_title), 16f))
                 issue = icon(R.drawable.ic_error_outline, context.getString(R.string.sim_issue)) {
                     error?.let { reason ->
-                        AlertDialog.Builder(context).setTitle(R.string.sim_failed).setMessage(reason)
+                        AlertDialog.Builder(context).setTitle(R.string.sim_failed)
+                            .setMessage(reason)
                             .setPositiveButton(R.string.sim_ok, null).show()
                     }
                 }.apply { imageTintList = ColorStateList.valueOf(Color.rgb(180, 83, 9)) }
@@ -57,10 +62,14 @@ class SimulationControl(private val ui: UiKit) {
                     setColor(Color.TRANSPARENT); setStroke(dp(1), muted)
                 }
             }
-            contentDescription = context.getString(if (enabled) R.string.sim_running else R.string.sim_stopped)
+            contentDescription =
+                context.getString(if (enabled) R.string.sim_running else R.string.sim_stopped)
         }
         issue?.visibility = if (error == null) View.GONE else View.VISIBLE
     }
+
     /** 重绘前释放旧视图引用和错误文字，不修改实际模拟状态。 */
-    fun detach() { toggle = null; indicator = null; issue = null; error = null }
+    fun detach() {
+        toggle = null; indicator = null; issue = null; error = null
+    }
 }

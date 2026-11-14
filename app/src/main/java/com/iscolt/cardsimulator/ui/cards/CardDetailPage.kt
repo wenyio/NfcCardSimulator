@@ -11,26 +11,53 @@ class CardDetailPage(private val ui: UiKit) {
     /** 组合卡片基本信息、场景和规则列表；仅展示与绑定编辑动作，不启动或重置模拟。 */
     fun show(content: LinearLayout, card: CardScript, edit: () -> Unit) = with(ui) {
         val body = column()
-        content.addView(ScrollView(context).apply { addView(body) }, LinearLayout.LayoutParams(-1, 0, 1f))
+        content.addView(
+            ScrollView(context).apply { addView(body) },
+            LinearLayout.LayoutParams(-1, 0, 1f)
+        )
         panel(body).apply {
 
             addView(label(card.scheme, 13f, muted))
-            addView(label("AID\n" + card.aids.joinToString("\n"), 13f).apply { typeface = Typeface.MONOSPACE; setTextIsSelectable(true) })
+            addView(label("AID\n" + card.aids.joinToString("\n"), 13f).apply {
+                typeface = Typeface.MONOSPACE; setTextIsSelectable(true)
+            })
             CardDescription(ui).show(this, card.description)
             addView(row().apply {
-                action(context.getString(if (card.builtIn) R.string.card_copy_edit else R.string.card_edit), edit)
+                action(
+                    context.getString(if (card.builtIn) R.string.card_copy_edit else R.string.card_edit),
+                    edit
+                )
             })
         }
         CardScenarioPanel(ui).show(body, card)
         panel(body).apply {
             addView(row().apply {
-                addView(label(context.getString(R.string.detail_rule_count, card.rules.size), 18f, ink, true),
-                    LinearLayout.LayoutParams(0, -2, 1f))
-                addView(icon(R.drawable.ic_info, context.getString(R.string.detail_execution_help)) {
-                    MatchingLabels.showExecutionHelp(ui)
-                })
+                addView(
+                    label(
+                        context.getString(R.string.detail_rule_count, card.rules.size),
+                        18f,
+                        ink,
+                        true
+                    ),
+                    LinearLayout.LayoutParams(0, -2, 1f)
+                )
+                addView(
+                    icon(
+                        R.drawable.ic_info,
+                        context.getString(R.string.detail_execution_help)
+                    ) {
+                        MatchingLabels.showExecutionHelp(ui)
+                    })
             })
-            addView(label(context.getString(R.string.detail_fallback, MatchingLabels.execution(context, card.ordered), card.fallback), 13f, muted))
+            addView(
+                label(
+                    context.getString(
+                        R.string.detail_fallback,
+                        MatchingLabels.execution(context, card.ordered),
+                        card.fallback
+                    ), 13f, muted
+                )
+            )
             RuleList(ui).show(this, card.rules)
         }
     }

@@ -9,6 +9,7 @@ class SimulatorApp : Application() {
     lateinit var storeLoader: StoreLoader
         private set
     val store: SimulatorStore get() = storeLoader.await()
+
     /**
      * Android 创建应用进程时调用；启动一次后台仓库加载，让首屏先绘制。
      * 界面通过 whenReady 接收结果；同步访问 store 的调用方可能等待加载完成。

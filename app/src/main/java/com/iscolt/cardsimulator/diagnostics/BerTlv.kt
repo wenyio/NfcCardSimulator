@@ -16,6 +16,7 @@ internal object BerTlv {
         require(Hex.valid(hex)) { "TLV 十六进制无效" }
         return parse(Hex.bytes(hex))
     }
+
     /**
      * 解析本项目支持的 BER-TLV 子集，严格校验边界、标签和嵌套深度；损坏输入直接抛异常。
      * BER（Basic Encoding Rules，基本编码规则）；TLV（Tag-Length-Value，标签—长度—值）。
@@ -23,6 +24,7 @@ internal object BerTlv {
      */
     fun parse(bytes: ByteArray, end: Int = bytes.size): List<TlvValue> {
         val result = mutableListOf<TlvValue>()
+
         /**
          * 递归读取半开区间 [start, limit) 中的 TLV，depth 从 0 开始；所有偏移和长度均以字节为单位。
          * 构造型标签递归展开；结果包含父节点和子节点，但整个解析成功才返回给调用方。
@@ -56,7 +58,13 @@ internal object BerTlv {
                     repeat(count) { length = (length shl 8) or (bytes[offset++].toInt() and 255) }
                 }
                 require(length <= limit - offset) { "$tag 声明长度超过剩余数据" }
-                result.add(TlvValue(tag, Hex.text(bytes.copyOfRange(offset, offset + length)), depth))
+                result.add(
+                    TlvValue(
+                        tag,
+                        Hex.text(bytes.copyOfRange(offset, offset + length)),
+                        depth
+                    )
+                )
                 // 首字节 0x20 位为 1 表示构造型：值本身仍是一组 TLV，例如 6F、A5。
                 if (first and 32 != 0) read(offset, offset + length, depth + 1)
                 // 无论是否递归，都跳过完整值，继续读取当前层的下一个节点。

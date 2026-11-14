@@ -15,11 +15,17 @@ import com.iscolt.cardsimulator.R
 class NfcController(private val activity: Activity, private val store: SimulatorStore) {
     private val service = ComponentName(activity, CardEmulationService::class.java)
     private val adapter get() = NfcAdapter.getDefaultAdapter(activity)
+
     /** 查询设备是否声明 HCE（Host Card Emulation，主机卡模拟）能力；普通 NFC 硬件支持不等于支持 HCE。 */
-    private fun supportsHce() = activity.packageManager.hasSystemFeature(PackageManager.FEATURE_NFC_HOST_CARD_EMULATION)
+    private fun supportsHce() =
+        activity.packageManager.hasSystemFeature(PackageManager.FEATURE_NFC_HOST_CARD_EMULATION)
+
     /** 查询本服务是否为系统 payment 类别的默认服务；本项目启动前要求满足此条件。 */
-    private fun isDefault() = adapter?.let { supportsHce() && CardEmulation.getInstance(it)
-        .isDefaultServiceForCategory(service, CardEmulation.CATEGORY_PAYMENT) } ?: false
+    private fun isDefault() = adapter?.let {
+        supportsHce() && CardEmulation.getInstance(it)
+            .isDefaultServiceForCategory(service, CardEmulation.CATEGORY_PAYMENT)
+    } ?: false
+
     /** 按硬件能力、NFC 开关、默认支付服务顺序生成状态文字；系统调用异常转为可显示的错误。 */
     fun status(): String = runCatching {
         when {
@@ -29,6 +35,7 @@ class NfcController(private val activity: Activity, private val store: Simulator
             else -> activity.getString(R.string.nfc_ready)
         }
     }.getOrElse { activity.getString(R.string.nfc_service_error, it.message) }
+
     /**
      * 幂等启动：已有实际启用状态就返回，否则检查设备条件并注册 PPSE 与当前卡的 AID。
      * NFC（Near Field Communication，近场通信）；AID（Application Identifier，应用标识符）用于系统选择路由。
@@ -46,24 +53,33 @@ class NfcController(private val activity: Activity, private val store: Simulator
         // ASCII（American Standard Code for Information Interchange，美国信息交换标准代码）定义字符与字节的对应。
         val aids = (listOf("325041592E5359532E4444463031") + card.aids).distinct()
         // 注册成功后才启动模拟；失败不能伪装为已启动。
-        val accepted = CardEmulation.getInstance(nfc).registerAidsForService(service, CardEmulation.CATEGORY_PAYMENT, aids)
+        val accepted = CardEmulation.getInstance(nfc)
+            .registerAidsForService(service, CardEmulation.CATEGORY_PAYMENT, aids)
         if (!accepted) {
             store.log("路由错误", "service=$service; category=payment; aids=$aids; result=false")
             error(activity.getString(R.string.nfc_registration_failed))
         }
         store.setEnabled(true)
     }
+
     /** 仅在已启用时关闭应用模拟开关，让旧引擎修订号失效；不撤销系统的默认支付选择。 */
     fun stop() {
         if (store.enabled) store.setEnabled(false)
     }
+
     /** 打开 Android 的 NFC 开关设置页；离开应用前台会由页面生命周期暂停模拟。 */
     fun nfcSettings() = activity.startActivity(Intent(Settings.ACTION_NFC_SETTINGS))
+
     /** 非默认服务时请求系统切换默认支付应用，否则打开支付设置；硬件不支持时抛出提示。 */
     fun paymentSettings() {
         check(adapter != null && supportsHce()) { activity.getString(R.string.nfc_no_hce) }
-        activity.startActivity(if (isDefault()) Intent(Settings.ACTION_NFC_PAYMENT_SETTINGS) else
-            Intent(CardEmulation.ACTION_CHANGE_DEFAULT).putExtra(CardEmulation.EXTRA_SERVICE_COMPONENT, service)
-                .putExtra(CardEmulation.EXTRA_CATEGORY, CardEmulation.CATEGORY_PAYMENT))
+        activity.startActivity(
+            if (isDefault()) Intent(Settings.ACTION_NFC_PAYMENT_SETTINGS) else
+                Intent(CardEmulation.ACTION_CHANGE_DEFAULT).putExtra(
+                    CardEmulation.EXTRA_SERVICE_COMPONENT,
+                    service
+                )
+                    .putExtra(CardEmulation.EXTRA_CATEGORY, CardEmulation.CATEGORY_PAYMENT)
+        )
     }
 }

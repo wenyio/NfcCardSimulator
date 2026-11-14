@@ -11,13 +11,21 @@ object RuleDifference {
     fun describe(rule: ApduRule, actual: String): String {
         val expected = rule.command
         val differences = (0 until minOf(expected.length, actual.length) step 2).filter { i ->
-            val mask = if (rule.mode == MatchMode.MASK) rule.mask.substring(i, i + 2).toInt(16) else 255
-            (expected.substring(i, i + 2).toInt(16) and mask) != (actual.substring(i, i + 2).toInt(16) and mask)
+            val mask =
+                if (rule.mode == MatchMode.MASK) rule.mask.substring(i, i + 2).toInt(16) else 255
+            (expected.substring(i, i + 2).toInt(16) and mask) != (actual.substring(i, i + 2)
+                .toInt(16) and mask)
         }
         val detail = differences.take(16).joinToString("；") { i ->
-            "字节 ${i / 2 + 1}: 期望 ${expected.substring(i, i + 2)} / 实际 ${actual.substring(i, i + 2)}"
+            "字节 ${i / 2 + 1}: 期望 ${expected.substring(i, i + 2)} / 实际 ${
+                actual.substring(
+                    i,
+                    i + 2
+                )
+            }"
         }
-        val length = if (expected.length != actual.length) "长度：期望 ${expected.length / 2}，实际 ${actual.length / 2} 字节。" else ""
+        val length =
+            if (expected.length != actual.length) "长度：期望 ${expected.length / 2}，实际 ${actual.length / 2} 字节。" else ""
         return "${rule.mode} · $length$detail" + if (differences.size > 16) "（其余差异省略）" else ""
     }
 }

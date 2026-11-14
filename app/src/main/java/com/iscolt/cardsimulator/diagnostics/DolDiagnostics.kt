@@ -25,11 +25,13 @@ class DolDiagnostics {
         conflicts.clear()
         gacCount = 0
     }
+
     /** 遇到 SELECT 命令头即清除诊断状态，即使后续未匹配；不重置脚本引擎的顺序游标。 */
     fun beforeCommand(command: String) {
         // 新 SELECT 无论是否成功，都不能沿用上一个应用的 DOL 定义。
         if (command.startsWith("00A4")) reset()
     }
+
     /**
      * 只从成功命中规则所返回的 9000 响应学习定义，统计成功 GAC，并拒绝冲突的字段布局。
      * SELECT 响应提取 PDOL，READ RECORD 响应提取 CDOL1/2；不借用场景元数据猜测定义。
@@ -37,7 +39,9 @@ class DolDiagnostics {
     fun observe(command: String, response: String) {
         // 9000 是成功状态字；错误响应、未命中的兜底响应均不用于学习定义。
         if (!response.endsWith("9000")) return
-        if (command.startsWith("80AE")) { gacCount++; return }
+        if (command.startsWith("80AE")) {
+            gacCount++; return
+        }
         if (!command.startsWith("00A4") && !command.startsWith("00B2")) return
         // 状态字占 2 字节，即 4 个十六进制字符，它不是 TLV 内容的一部分。
         val values = runCatching { BerTlv.parse(response.dropLast(4)) }.getOrNull() ?: return
@@ -62,17 +66,20 @@ class DolDiagnostics {
             actual.startsWith("80AE") && gacCount < 2 -> if (gacCount == 0) "8C" else "8D"
             else -> return ""
         }
-        val title = when (type) { "9F38" -> "PDOL"; "8C" -> "CDOL1"; else -> "CDOL2" }
+        val title = when (type) {
+            "9F38" -> "PDOL"; "8C" -> "CDOL1"; else -> "CDOL2"
+        }
         if (rule.command == actual) return ""
         if (type in conflicts) return "$title 定义存在冲突，未按字段解释；请核对当前应用的回复。"
-        val definition = definitions[type] ?: return "$title：当前会话尚未获得 $type 定义，仅保留原始命令差异。"
+        val definition =
+            definitions[type] ?: return "$title：当前会话尚未获得 $type 定义，仅保留原始命令差异。"
         return try {
             val fields = parseDol(definition)
             val expected = commandData(rule.command, type == "9F38")
             val input = commandData(actual, type == "9F38")
             val size = fields.sumOf { it.length } * 2
             require(expected.length == size && input.length == size) {
-                "DOL 要求 "+size / 2+" 字节，期望输入 "+expected.length / 2+"，实际输入 "+input.length / 2
+                "DOL 要求 " + size / 2 + " 字节，期望输入 " + expected.length / 2 + "，实际输入 " + input.length / 2
             }
             // 此处对字符串切片，所以 DOL 的字节数必须乘以 2 才是字符偏移。
             var offset = 0
@@ -85,9 +92,11 @@ class DolDiagnostics {
             }
             if (changes.isEmpty()) "$title 数据一致；差异位于 APDU 头、长度或 Le。"
             else (if (matched) "规则已匹配，但固定回复的 $title 输入不同（不会重算签名或密文）：\n"
-                else "$title 字段差异：\n") + changes.take(20).joinToString("\n") +
-                if (changes.size > 20) "\n其余差异省略" else ""
-        } catch (e: IllegalArgumentException) { "$title 无法按字段解释：${e.message}" }
+            else "$title 字段差异：\n") + changes.take(20).joinToString("\n") +
+                    if (changes.size > 20) "\n其余差异省略" else ""
+        } catch (e: IllegalArgumentException) {
+            "$title 无法按字段解释：${e.message}"
+        }
     }
 
     /**
@@ -134,8 +143,7 @@ class DolDiagnostics {
             start = 10
             length = shortLength * 2
             le = 2
-        }
-        else {
+        } else {
             require(command.length >= 14) { "扩展 APDU 缺少 Lc" }
             // 00 为扩展长度标志，接下来的两字节才是 Lc；此函数前提是含数据的 GPO/GAC。
             start = 14
@@ -157,9 +165,22 @@ class DolDiagnostics {
         // 字段名称仅用于诊断显示。完整英文释义和长度示例见 docs/NFC-GLOSSARY.md。
         // TTQ（Terminal Transaction Qualifiers，终端交易属性）、TVR（Terminal Verification Results，终端验证结果）。
         // ICC（Integrated Circuit Card，集成电路卡）；9F4C 是 ICC Dynamic Number（ICC 动态数）。
-        private val names = mapOf("9F02" to "授权金额", "9F03" to "其他金额", "9F1A" to "终端国家代码",
-            "5F2A" to "交易货币代码", "9A" to "交易日期", "9C" to "交易类型", "9F37" to "不可预知数（终端随机数）",
-            "9F66" to "终端交易属性 TTQ", "9F35" to "终端类型", "9F33" to "终端能力", "95" to "终端验证结果 TVR",
-            "9F34" to "持卡人验证结果", "9F21" to "交易时间", "9F45" to "数据认证码", "9F4C" to "ICC 动态数")
+        private val names = mapOf(
+            "9F02" to "授权金额",
+            "9F03" to "其他金额",
+            "9F1A" to "终端国家代码",
+            "5F2A" to "交易货币代码",
+            "9A" to "交易日期",
+            "9C" to "交易类型",
+            "9F37" to "不可预知数（终端随机数）",
+            "9F66" to "终端交易属性 TTQ",
+            "9F35" to "终端类型",
+            "9F33" to "终端能力",
+            "95" to "终端验证结果 TVR",
+            "9F34" to "持卡人验证结果",
+            "9F21" to "交易时间",
+            "9F45" to "数据认证码",
+            "9F4C" to "ICC 动态数"
+        )
     }
 }

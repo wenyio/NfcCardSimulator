@@ -19,12 +19,20 @@ internal fun TextView.showEditorError(message: String) {
 /**
  * 创建固定标签及独立输入控件，按 multiline 决定单行或多行，返回输入框供快照读取。
  */
-internal fun UiKit.editorField(parent: LinearLayout, title: String, value: String, multiline: Boolean = false): EditText {
+internal fun UiKit.editorField(
+    parent: LinearLayout,
+    title: String,
+    value: String,
+    multiline: Boolean = false
+): EditText {
     parent.addView(label(title, 13f, muted))
     return EditText(context).apply {
         hint = title; setText(value); setSelectAllOnFocus(false)
-        inputType = InputType.TYPE_CLASS_TEXT or if (multiline) InputType.TYPE_TEXT_FLAG_MULTI_LINE else InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-        if (multiline) { minLines = 2; maxLines = 8 } else setSingleLine(true)
+        inputType =
+            InputType.TYPE_CLASS_TEXT or if (multiline) InputType.TYPE_TEXT_FLAG_MULTI_LINE else InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+        if (multiline) {
+            minLines = 2; maxLines = 8
+        } else setSingleLine(true)
         parent.addView(this, LinearLayout.LayoutParams(-1, -2))
     }
 }

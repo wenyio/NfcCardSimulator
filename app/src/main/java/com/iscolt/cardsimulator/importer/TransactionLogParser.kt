@@ -18,16 +18,26 @@ data class CapturedTransaction(val pairs: List<CapturedPair>, val issues: List<S
             else c.substring(10, 10 + size * 2).takeUnless { it == PPSE }
         }
     }.distinct()
+
     /** 把无错误的收发对转换为按步骤执行的固定回复卡片，再检查大小与内容；不推导动态算法。 */
     fun toCard(name: String, scheme: String, aids: List<String>): CardScript {
         require(issues.isEmpty()) { "日志有错误，不能导入" }
-        val card = CardScript("log-" + UUID.randomUUID(), name, scheme, aids,
+        val card = CardScript(
+            "log-" + UUID.randomUUID(),
+            name,
+            scheme,
+            aids,
             "日志固定回复；未计算动态密文或签名。",
-            pairs.map { ApduRule(it.command, it.response, label = "日志行 ${it.line}") }, ordered = true)
+            pairs.map { ApduRule(it.command, it.response, label = "日志行 ${it.line}") },
+            ordered = true
+        )
         ScriptCodec.checkSize(ScriptCodec.encode(listOf(card)))
         return ScriptValidation.card(card)
     }
-    companion object { const val PPSE = "325041592E5359532E4444463031" }
+
+    companion object {
+        const val PPSE = "325041592E5359532E4444463031"
+    }
 }
 
 /** 严格解析 T:/C:，不猜测方向、不补造缺失回复。 */
@@ -47,6 +57,7 @@ object TransactionLogParser {
         var direction: String? = null
         var buffer = StringBuilder()
         var startLine = 0
+
         /**
          * 结算当前方向缓冲，完成命令/回复配对或记录问题；新 PPSE 选择可开启下一笔交易。
          * 无效回复也消耗待配对命令，避免后续回复被错配给上一条命令。
@@ -70,7 +81,9 @@ object TransactionLogParser {
             } else {
                 val pending = command
                 if (pending == null) issues.add("第 $startLine 行：回复前没有命令")
-                else { pairs.add(CapturedPair(pending, value, commandLine)); command = null }
+                else {
+                    pairs.add(CapturedPair(pending, value, commandLine)); command = null
+                }
             }
             direction = null; buffer = StringBuilder()
         }
@@ -78,21 +91,41 @@ object TransactionLogParser {
             val line = raw.trim()
             val marker = Regex("^([TC]):(.*)$", RegexOption.IGNORE_CASE).matchEntire(line)
             when {
-                marker != null -> { flush(); direction = marker.groupValues[1].uppercase(); buffer.append(marker.groupValues[2]); startLine = index + 1 }
+                marker != null -> {
+                    flush(); direction =
+                        marker.groupValues[1].uppercase(); buffer.append(marker.groupValues[2]); startLine =
+                        index + 1
+                }
+
                 line.isBlank() || line.startsWith("#") -> Unit
                 line == "---" -> {
                     flush()
-                    if (command != null) { issues.add("第 $commandLine 行：命令缺少回复"); command = null }
-                    if (pairs.isNotEmpty() || issues.isNotEmpty()) result.add(CapturedTransaction(pairs.toList(), issues.toList()))
+                    if (command != null) {
+                        issues.add("第 $commandLine 行：命令缺少回复"); command = null
+                    }
+                    if (pairs.isNotEmpty() || issues.isNotEmpty()) result.add(
+                        CapturedTransaction(
+                            pairs.toList(),
+                            issues.toList()
+                        )
+                    )
                     pairs = mutableListOf(); issues = mutableListOf()
                 }
+
                 direction != null && Hex.valid(Hex.clean(line)) -> buffer.append(line)
-                else -> { flush(); issues.add("第 ${index + 1} 行：无法识别，仅支持 T:/C:、十六进制续行、# 注释、--- 分隔") }
+                else -> {
+                    flush(); issues.add("第 ${index + 1} 行：无法识别，仅支持 T:/C:、十六进制续行、# 注释、--- 分隔")
+                }
             }
         }
         flush()
         if (command != null) issues.add("第 $commandLine 行：命令缺少回复")
-        if (pairs.isNotEmpty() || issues.isNotEmpty()) result.add(CapturedTransaction(pairs, issues))
+        if (pairs.isNotEmpty() || issues.isNotEmpty()) result.add(
+            CapturedTransaction(
+                pairs,
+                issues
+            )
+        )
         require(result.isNotEmpty()) { "未找到命令回复" }
         require(result.size <= 200) { "交易数超过 200" }
         return result

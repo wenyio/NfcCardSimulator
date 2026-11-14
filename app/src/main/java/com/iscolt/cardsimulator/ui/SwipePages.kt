@@ -10,9 +10,11 @@ import androidx.viewpager.widget.ViewPager
  * 组装标签和横向分页，连接双向选择；renderPage 只在页面视图创建时填充内容。
  * 切页不重启卡片会话。
  */
-fun UiKit.swipePages(parent: LinearLayout, titles: List<String>, selected: Int,
+fun UiKit.swipePages(
+    parent: LinearLayout, titles: List<String>, selected: Int,
     scrollableTabs: Boolean = false, onSelected: (Int) -> Unit,
-    renderPage: (Int, LinearLayout) -> Unit) {
+    renderPage: (Int, LinearLayout) -> Unit
+) {
     val pager = SwipePager(context).apply {
         // 相邻页之间保留背景留白，横滑时卡片不会贴成一整块；静止页宽和外边距保持不变。
         pageMargin = dp(12)
@@ -25,13 +27,17 @@ fun UiKit.swipePages(parent: LinearLayout, titles: List<String>, selected: Int,
     pager.adapter = object : PagerAdapter() {
         /** 向分页器报告标签数量，标签与页面一一对应。 */
         override fun getCount() = titles.size
+
         /** 使用视图身份判断页面对象，避免按内容或标签文本误判。 */
         override fun isViewFromObject(view: View, item: Any) = view === item
+
         /** 为指定位置创建内容容器，挂到分页器后调用页面渲染回调。 */
-        override fun instantiateItem(container: ViewGroup, position: Int): Any = column().also { page ->
-            page.tag = "tab-page:$position"
-            container.addView(page); renderPage(position, page)
-        }
+        override fun instantiateItem(container: ViewGroup, position: Int): Any =
+            column().also { page ->
+                page.tag = "tab-page:$position"
+                container.addView(page); renderPage(position, page)
+            }
+
         /** 移除被分页器回收的页面视图；脚本引擎的寿命不由此回调控制。 */
         override fun destroyItem(container: ViewGroup, position: Int, item: Any) {
             container.removeView(item as View)
@@ -45,6 +51,7 @@ fun UiKit.swipePages(parent: LinearLayout, titles: List<String>, selected: Int,
         override fun onPageSelected(position: Int) {
             tabs.getTabAt(position)?.select(); onSelected(position)
         }
+
         /** 把分页滚动比例传给标签栏，保持指示器随手势移动。 */
         override fun onPageScrolled(position: Int, offset: Float, offsetPixels: Int) {
             tabs.setScrollPosition(position, offset, true)

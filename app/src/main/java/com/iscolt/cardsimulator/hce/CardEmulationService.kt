@@ -15,9 +15,11 @@ import com.iscolt.cardsimulator.core.ScriptEngine
 class CardEmulationService : HostApduService() {
     private val store get() = (application as SimulatorApp).store
     private var engine: ScriptEngine? = null
+
     // 记录引擎创建时的配置修订号；与仓库不同时，旧会话不能继续使用。
     private var revision: Long = -1
     private var session = "NFC"
+
     /**
      * Android 将路由到本服务的 C-APDU 交给此回调，本函数同步返回完整 R-APDU 字节数组。
      * APDU（Application Protocol Data Unit，应用协议数据单元）；C 为 Command（命令），R 为 Response（响应）。
@@ -53,12 +55,17 @@ class CardEmulationService : HostApduService() {
             Hex.bytes("6F00")
         }
     }
+
     /**
      * Android 通知本 HCE 选择失活时丢弃引擎；下条命令重新建立脚本会话。
      * 可能是射频连接丢失，也可能是终端切换到其他服务，不能把所有失活都解释为断场。
      */
     override fun onDeactivated(reason: Int) {
         engine = null
-        store.log("会话", if (reason == DEACTIVATION_LINK_LOSS) "射频连接断开" else "切换到其他 NFC 服务", session)
+        store.log(
+            "会话",
+            if (reason == DEACTIVATION_LINK_LOSS) "射频连接断开" else "切换到其他 NFC 服务",
+            session
+        )
     }
 }

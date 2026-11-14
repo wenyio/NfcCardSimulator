@@ -13,11 +13,15 @@ class StoreLoader(load: () -> SimulatorStore) {
     private val task = FutureTask {
         val started = SystemClock.elapsedRealtime()
         runCatching(load).also {
-            Log.i("SimulatorStartup", "Store loaded in " + (SystemClock.elapsedRealtime() - started) + " ms")
+            Log.i(
+                "SimulatorStartup",
+                "Store loaded in " + (SystemClock.elapsedRealtime() - started) + " ms"
+            )
         }
     }
     private val callbacks = mutableSetOf<(Result<SimulatorStore>) -> Unit>()
     private var result: Result<SimulatorStore>? = null
+
     init {
         val executor = Executors.newSingleThreadExecutor { Thread(it, "simulator-startup") }
         executor.execute {
@@ -34,11 +38,13 @@ class StoreLoader(load: () -> SimulatorStore) {
         }
         executor.shutdown()
     }
+
     /**
      * 同步等待共享加载任务并返回仓库；失败重新抛出加载异常。
      * 这是阻塞入口，HCE 回调使用它也可能等待；首页使用 whenReady 避免首屏等待。
      */
     fun await(): SimulatorStore = task.get().getOrThrow()
+
     /**
      * 仅主线程订阅加载结果，返回取消订阅函数；结果已就绪时仍异步投递。
      * 取消只移除回调，不取消整个进程共用的加载任务。

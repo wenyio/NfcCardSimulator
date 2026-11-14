@@ -89,6 +89,20 @@ class CardPackDeviceTest {
         repo.delete(first.id); assertNull(repo.find(first.id)); assertNotNull(repo.find(second.id))
         assertTrue(runCatching { repo.delete(CardPacks.PERSONAL) }.isFailure)
     }
+    @Test fun objectValidationFailureKeepsStoredPackAndDiskUnchanged() {
+        val dir = java.io.File(context.cacheDir, "validate-pack-" + System.nanoTime()).apply { mkdirs() }
+        val isolated = object : android.content.ContextWrapper(context) { override fun getFilesDir() = dir }
+        val repo = CardPackRepository(isolated)
+        val pack = repo.importPack(CardPack("validation", "校验测试", cards = listOf(card("原卡"))))
+        val disk = java.io.File(dir, "card-packs.json").readText()
+        val invalid = pack.cards.single().copy(metadata = CardMetadata(scenario = TestScenario(amount = "x".repeat(121))))
+        assertTrue(runCatching { repo.saveEditedCard(invalid, invalid.key) }.isFailure)
+        assertTrue(runCatching { repo.importPack(pack.copy(cards = listOf(invalid)), pack.id) }.isFailure)
+        assertTrue(runCatching { repo.importPack(pack.copy(cards = pack.cards + pack.cards), pack.id) }.isFailure)
+        assertEquals(pack, repo.find(pack.id))
+        assertEquals(disk, java.io.File(dir, "card-packs.json").readText())
+        assertEquals(pack, CardPackRepository(isolated).find(pack.id))
+    }
     @Test fun obsoleteCardsFileIsNotImported() {
         val dir = java.io.File(context.cacheDir, "no-migration-" + java.util.UUID.randomUUID()).apply { mkdirs() }
         java.io.File(dir, "cards.json").writeText(ScriptCodec.encode(listOf(card("旧卡"))))

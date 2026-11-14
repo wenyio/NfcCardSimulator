@@ -23,11 +23,11 @@ class BuiltinCardPackDeviceTest {
         val builtin = app.store.cards().filter { it.builtIn }
         assertEquals(6, builtin.size)
         val source = builtin.first { it.id == "demo-discover" }
-        assertTrue(runCatching { app.store.importCards(listOf(source)) }.isFailure)
+        assertTrue(runCatching { app.store.saveEditedCard(source, source.key) }.isFailure)
         assertTrue(runCatching { app.store.delete(source.key) }.isFailure)
         val copy = source.copy(id = "qa-demo-copy", builtIn = false, packId = CardPacks.PERSONAL)
         try {
-            app.store.importCards(listOf(copy))
+            app.store.saveEditedCard(copy, null)
             assertEquals(source.metadata, app.store.findCard(copy.key)!!.metadata)
         } finally { app.store.delete(copy.key) }
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->

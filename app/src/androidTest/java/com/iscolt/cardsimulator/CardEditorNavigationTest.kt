@@ -27,7 +27,7 @@ class CardEditorNavigationTest {
         val source = CardScript("qa-editor-source", "页面测试原卡", "Local Network", listOf("F001020304"), "原说明",
             listOf(ApduRule("00CA000000", "019000", label = "第一条")),
             metadata = CardMetadata(scenario = TestScenario(purpose = "保留场景", legacyPdol = "9F0206")))
-        app.store.importCards(listOf(source))
+        app.store.saveEditedCard(source.copy(packId = CardPacks.PERSONAL), null)
         try {
             ActivityScenario.launch<CardEditorActivity>(Intent(context, CardEditorActivity::class.java)
                 .putExtra("cardId", source.id).putExtra("copy", true)).use { scenario ->
@@ -39,11 +39,14 @@ class CardEditorNavigationTest {
                     views(activity.window.decorView).filterIsInstance<Spinner>().single { it.contentDescription == "执行方式" }.setSelection(1)
                     views(activity.window.decorView).first { it.contentDescription == "编辑规则 1" }.performClick()
                     field(activity, "规则说明").setText("修改后的规则")
-                    field(activity, "命令 C-APDU（十六进制）").setText("00CA010000")
+                    field(activity, "命令 C-APDU（十六进制）").setText("00CA01Z")
                 }
                 scenario.recreate()
                 scenario.onActivity { activity ->
-                    assertEquals("00CA010000", field(activity, "命令 C-APDU（十六进制）").text.toString())
+                    assertEquals("00CA01Z", field(activity, "命令 C-APDU（十六进制）").text.toString())
+                    button(activity, "保存规则").performClick()
+                    assertEquals("00CA01Z", field(activity, "命令 C-APDU（十六进制）").text.toString())
+                    field(activity, "命令 C-APDU（十六进制）").setText("00CA010000")
                     button(activity, "保存规则").performClick()
                     assertEquals("页面测试副本", field(activity, "卡片名称").text.toString())
                     assertEquals("顺序匹配", views(activity.window.decorView).filterIsInstance<Spinner>().single { it.contentDescription == "执行方式" }.selectedItem)
@@ -51,6 +54,7 @@ class CardEditorNavigationTest {
                 }
                 scenario.recreate()
                 scenario.onActivity { activity -> button(activity, "保存卡片").performClick() }
+                awaitSaved { app.store.cards().any { it.name == "页面测试副本" } }
             }
             val copied = app.store.cards().single { it.name == "页面测试副本" }
             assertNotEquals(source.id, copied.id); assertEquals(source.metadata, copied.metadata)

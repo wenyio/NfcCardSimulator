@@ -9,11 +9,10 @@ import android.content.Context
 import android.widget.*
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
 import com.iscolt.cardsimulator.R
 import com.iscolt.cardsimulator.SimulatorApp
 import com.iscolt.cardsimulator.core.ApduRule
-import com.iscolt.cardsimulator.core.MatchMode
+import com.iscolt.cardsimulator.core.RuleCodec
 import com.iscolt.cardsimulator.data.CardSchemeStore
 import com.iscolt.cardsimulator.ui.UiKit
 import org.json.JSONObject
@@ -45,8 +44,8 @@ class CardEditorActivity : AppCompatActivity() {
         if (restored != null) {
             draft = CardEditorDraft.restore(restored.getJSONObject("draft"))
             if (restored.has("ruleIndex")) {
-                ruleIndex = restored.getInt("ruleIndex"); rule = readRule(restored.getJSONObject("rule"))
-                originalRule = readRule(restored.getJSONObject("originalRule"))
+                ruleIndex = restored.getInt("ruleIndex"); rule = RuleCodec.decode(restored.getJSONObject("rule"))
+                originalRule = RuleCodec.decode(restored.getJSONObject("originalRule"))
             }
         } else {
             val sourceId = intent.getStringExtra("cardId")
@@ -61,18 +60,13 @@ class CardEditorActivity : AppCompatActivity() {
         })
     }
     private fun buildShell() = with(ui) {
-        window.statusBarColor = ink; window.navigationBarColor = ink
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
-        val root = column().apply { setBackgroundColor(Color.rgb(241, 245, 249)) }
-        toolbar = row().apply { setBackgroundColor(ink); setPadding(dp(8), dp(4), dp(8), dp(4)) }
-        root.addView(toolbar)
         body = column().apply { setPadding(dp(16), 0, dp(16), 0) }
-        root.addView(body, LinearLayout.LayoutParams(-1, 0, 1f)); setContentView(root)
+        toolbar = shell(this@CardEditorActivity, body)
     }
     private fun render(): Unit = with(ui) {
         toolbar.removeAllViews(); body.removeAllViews()
         toolbar.addView(icon(R.drawable.ic_back, getString(R.string.action_back)) { back() }.apply { setColorFilter(Color.WHITE) })
-        val title = when (draft.title) { "新建卡片" -> getString(R.string.editor_title_new); "复制卡片" -> getString(R.string.editor_title_copy); "编辑卡片" -> getString(R.string.editor_title_edit); else -> draft.title }
+        val title = getString(when (draft.mode) { EditorMode.NEW -> R.string.editor_title_new; EditorMode.COPY -> R.string.editor_title_copy; EditorMode.EDIT -> R.string.editor_title_edit })
         toolbar.addView(label(if (ruleIndex == null) title else getString(R.string.editor_rule_title), 20f, Color.WHITE, true), LinearLayout.LayoutParams(0, -2, 1f))
         toolbar.addView(Button(this@CardEditorActivity).apply {
             text = getString(if (ruleIndex == null) R.string.editor_save_card else R.string.editor_save_rule); isAllCaps = false
@@ -126,7 +120,7 @@ class CardEditorActivity : AppCompatActivity() {
             if (ruleIndex == null) draft.card = form.snapshot() else rule = ruleForm.snapshot()
             // APDU 可能很长，草稿存应用私有文件；Bundle 只传标识，避免 Binder 大小限制。
             val json = JSONObject().put("draft", draft.state())
-            if (ruleIndex != null) json.put("ruleIndex", ruleIndex).put("rule", writeRule(rule!!)).put("originalRule", writeRule(originalRule!!))
+            if (ruleIndex != null) json.put("ruleIndex", ruleIndex).put("rule", RuleCodec.encode(rule!!, draft = true)).put("originalRule", RuleCodec.encode(originalRule!!, draft = true))
             val atomic = android.util.AtomicFile(stateFile); val stream = atomic.startWrite()
             try { stream.write(json.toString().toByteArray(Charsets.UTF_8)); atomic.finishWrite(stream) }
             catch (error: Exception) { atomic.failWrite(stream); throw error }
@@ -134,8 +128,4 @@ class CardEditorActivity : AppCompatActivity() {
         }
         super.onSaveInstanceState(outState)
     }
-    private fun writeRule(rule: ApduRule) = JSONObject().put("command", rule.command).put("response", rule.response)
-        .put("mode", rule.mode.name).put("mask", rule.mask).put("label", rule.label)
-    private fun readRule(json: JSONObject) = ApduRule(json.getString("command"), json.getString("response"),
-        MatchMode.valueOf(json.getString("mode")), json.getString("mask"), json.getString("label"))
 }

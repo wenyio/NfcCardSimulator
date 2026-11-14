@@ -58,6 +58,7 @@ class CardPackCreationTest {
                     button("创建")
                 }
                 instrument.waitForIdleSync()
+                awaitSaved { app.store.currentPack().name == "新建场景包" }
                 scenario.onActivity { activity ->
                     val pack = app.store.currentPack()
                     assertEquals("新建场景包", pack.name); assertEquals("本地场景说明", pack.description)
@@ -118,6 +119,7 @@ class CardPackCreationTest {
                     assertNotNull(app.store.findCard(card.key))
                     views(activity.window.decorView).filterIsInstance<Button>().single { it.text.toString() == "保存卡片" }.performClick()
                 }
+                awaitSaved { app.store.findCard(target.id + ":" + card.id) != null }
             }
             assertNull(app.store.findCard(card.key)); assertNotNull(app.store.findCard(target.id + ":" + card.id))
             app.store.switchPack(CardPacks.DEMO)

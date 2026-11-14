@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.iscolt.cardsimulator.core.*
 import com.iscolt.cardsimulator.data.SimulatorStore
 import com.iscolt.cardsimulator.importer.TransactionLogParser
-import com.iscolt.cardsimulator.importer.CardFileImporter
 import com.iscolt.cardsimulator.importer.ImportEvidence
 import com.iscolt.cardsimulator.ui.UiKit
 import com.iscolt.cardsimulator.ui.cards.CardPackImportDialog

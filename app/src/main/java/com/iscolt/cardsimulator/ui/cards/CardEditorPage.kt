@@ -10,17 +10,13 @@ import com.iscolt.cardsimulator.R
 /** 主表单不保存业务数据，通过 snapshot 返回工作副本，规则编辑与字段分开维护。 */
 class CardEditorPage(private val ui: UiKit, private val schemes: CardSchemeStore) {
     private lateinit var snapshotFields: () -> CardScript
-    private var error: TextView? = null
+    private lateinit var error: TextView
     fun snapshot() = snapshotFields()
-    fun error(message: String) {
-        error?.text = message; error?.visibility = android.view.View.VISIBLE
-        (error?.parent?.parent as? ScrollView)?.smoothScrollTo(0, 0)
-        Toast.makeText(ui.context, message, Toast.LENGTH_LONG).show()
-    }
+    fun error(message: String) = error.showEditorError(message)
     fun show(parent: LinearLayout, card: CardScript, packs: List<CardPack>, editRule: (Int) -> Unit, changedRules: (CardScript) -> Unit) = with(ui) {
         val body = column().apply { setPadding(0, dp(12), 0, dp(20)) }
         parent.addView(ScrollView(context).apply { isFillViewport = true; addView(body) }, LinearLayout.LayoutParams(-1, -1))
-        error = label("", 13f, android.graphics.Color.rgb(185, 28, 28)); body.addView(error); error?.visibility = android.view.View.GONE
+        error = label("", 13f, android.graphics.Color.rgb(185, 28, 28)); body.addView(error); error.visibility = android.view.View.GONE
         val basic = panel(body); basic.addView(label(context.getString(R.string.editor_basic), 16f, ink, true))
         val name = editorField(basic, context.getString(R.string.editor_name), card.name)
         val pack = CardPackSelector(ui, basic, packs, card.packId)

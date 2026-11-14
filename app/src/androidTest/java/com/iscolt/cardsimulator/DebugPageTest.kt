@@ -28,7 +28,7 @@ class DebugPageTest {
         val first = ApduRule("00A4040005F00102030400", "5A0212349000", label = "选择应用")
         val second = ApduRule("00B2011400", "9000", label = "读记录")
         val card = CardScript("qa-debug-picker", "QA 调试选择", "其他", listOf("F001020304"), "", listOf(first, second), ordered = true)
-        store.importCards(listOf(card))
+        store.saveEditedCard(card.copy(packId = CardPacks.PERSONAL), null)
         try {
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                 lateinit var root: LinearLayout
@@ -99,7 +99,7 @@ class DebugPageTest {
                 }
                 scenario.onActivity {
                     val dialog = WindowInspector.getGlobalWindowViews().first { has(it, "调试使用说明") }
-                    assertTrue(has(dialog, "只填充")); assertTrue(has(dialog, "未匹配不推进")); assertTrue(has(dialog, "密文或签名"))
+                    assertTrue(has(dialog, instrument.targetContext.getString(R.string.debug_instructions)))
                     button(dialog, "知道了").performClick()
                 }
                 scenario.onActivity { assertFalse(WindowInspector.getGlobalWindowViews().any { has(it, "知道了") }) }

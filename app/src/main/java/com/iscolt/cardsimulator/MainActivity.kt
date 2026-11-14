@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.*
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
 import com.iscolt.cardsimulator.core.CardScript
 import com.iscolt.cardsimulator.io.DocumentController
 import com.iscolt.cardsimulator.nfc.*
@@ -91,8 +90,7 @@ class MainActivity : AppCompatActivity() {
         ui = UiKit(this)
         // SAF 启动器必须在 STARTED 前注册，数据仓库则延迟到实际使用时取得。
         documents = DocumentController(this, { store }, { showList() }, ::message)
-        window.statusBarColor = ui.ink; window.navigationBarColor = ui.ink
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
+        ui.systemBars(this)
         setContentView(StartupPage(ui).create())
         cancelStartup = (application as SimulatorApp).storeLoader.whenReady { result ->
             if (!isDestroyed && !isFinishing) result.fold(
@@ -166,15 +164,8 @@ class MainActivity : AppCompatActivity() {
     }
     override fun onDestroy() { cancelStartup?.invoke(); documents.close(); super.onDestroy() }
     private fun buildShell() = with(ui) {
-        // 状态栏与工具栏使用同一底色，保留系统安全区域，浅色图标保持可读。
-        window.statusBarColor = ink; window.navigationBarColor = ink
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
-        val root = column().apply { setBackgroundColor(Color.rgb(241, 245, 249)) }
-        toolbar = row().apply { setBackgroundColor(ink); setPadding(dp(8), dp(4), dp(8), dp(4)) }
-        root.addView(toolbar)
         content = column().apply { setPadding(dp(16), dp(4), dp(16), 0) }
-        root.addView(content, LinearLayout.LayoutParams(-1, 0, 1f))
-        setContentView(root)
+        toolbar = shell(this@MainActivity, content)
     }
     private fun editCard(card: CardScript?, copy: Boolean) {
         editorPending = true; session.editing(true); session.foreground(false); updateStatus()

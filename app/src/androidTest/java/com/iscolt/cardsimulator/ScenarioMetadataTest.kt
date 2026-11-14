@@ -35,7 +35,7 @@ class ScenarioMetadataTest {
         val metadata = CardMetadata(CardSource("自编测试", "scenario.json", "a".repeat(64), "SOURCE01", "CFG01"),
             TestScenario("L2", "检查金额与随机数差异", "仅验证诊断展示", "先选择应用，再发送 GPO", "0.01（示例）"), listOf("自编验证数据"))
         val card = CardScript("qa-scenario", "QA 场景卡", "Discover", listOf("F001020304"), "", listOf(select, gpo), true, metadata = metadata)
-        app.store.importCards(listOf(card))
+        app.store.saveEditedCard(card.copy(packId = CardPacks.PERSONAL), null)
         app.store.switchPack(com.iscolt.cardsimulator.core.CardPacks.PERSONAL)
         try {
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->

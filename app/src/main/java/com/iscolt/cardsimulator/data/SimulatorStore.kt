@@ -61,12 +61,6 @@ class SimulatorStore(context: Context) {
         enabled = value; sessionRevision++
         log("状态", if (value) "模拟已启动，请保持手机解锁" else "模拟已停止")
     }
-    /** 编辑已有卡保留归属；新建和复制由草稿显式指向自建卡片。 */
-    @Synchronized fun importCards(cards: List<CardScript>): Int {
-        repository.saveCards(cards)
-        setEnabled(false)
-        return cards.size
-    }
     @Synchronized fun importPack(pack: CardPack, targetId: String? = null): CardPack {
         val saved = repository.importPack(pack, targetId)
         switchPack(saved.id)

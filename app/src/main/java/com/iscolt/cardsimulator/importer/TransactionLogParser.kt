@@ -19,7 +19,8 @@ data class CapturedTransaction(val pairs: List<CapturedPair>, val issues: List<S
         val card = CardScript("log-" + UUID.randomUUID(), name, scheme, aids,
             "日志固定回复；未计算动态密文或签名。",
             pairs.map { ApduRule(it.command, it.response, label = "日志行 ${it.line}") }, ordered = true)
-        return ScriptCodec.parse(ScriptCodec.encode(listOf(card))).single()
+        ScriptCodec.checkSize(ScriptCodec.encode(listOf(card)))
+        return ScriptValidation.card(card)
     }
     companion object { const val PPSE = "325041592E5359532E4444463031" }
 }

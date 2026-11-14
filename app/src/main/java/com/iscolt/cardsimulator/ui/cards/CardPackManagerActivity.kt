@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
 import com.iscolt.cardsimulator.R
 import com.iscolt.cardsimulator.SimulatorApp
 import com.iscolt.cardsimulator.io.DocumentController
@@ -29,10 +28,9 @@ class CardPackManagerActivity : AppCompatActivity() {
         actions = CardPackActions(ui, store, ::render, documents::exportPack, ::message)
         restoredScroll = savedInstanceState?.getInt("scrollY") ?: 0
         with(ui) {
-            window.statusBarColor = ink; window.navigationBarColor = ink
-            WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
-            val root = column().apply { setBackgroundColor(Color.rgb(241, 245, 249)) }
-            val toolbar = row().apply { setBackgroundColor(ink); setPadding(dp(8), dp(4), dp(8), dp(4)) }
+            body = column().apply { setPadding(dp(16), dp(12), dp(16), dp(12)) }
+            scroll = ScrollView(this@CardPackManagerActivity).apply { addView(body); isFillViewport = true }
+            val toolbar = shell(this@CardPackManagerActivity, scroll)
             toolbar.addView(icon(R.drawable.ic_back, getString(R.string.action_back)) { finish() }.apply { setColorFilter(Color.WHITE) })
             toolbar.addView(label(getString(R.string.pack_manage_title), 20f, Color.WHITE, true), LinearLayout.LayoutParams(0, -2, 1f))
             toolbar.addView(icon(R.drawable.ic_add, getString(R.string.pack_add)) { anchor ->
@@ -44,11 +42,6 @@ class CardPackManagerActivity : AppCompatActivity() {
                     show()
                 }
             }.apply { setColorFilter(Color.WHITE) })
-            root.addView(toolbar)
-            body = column().apply { setPadding(dp(16), dp(12), dp(16), dp(12)) }
-            scroll = ScrollView(this@CardPackManagerActivity).apply { addView(body); isFillViewport = true }
-            root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
-            setContentView(root)
         }
     }
 

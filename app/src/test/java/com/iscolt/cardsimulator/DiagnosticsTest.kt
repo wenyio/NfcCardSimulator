@@ -2,10 +2,27 @@ package com.iscolt.cardsimulator
 
 import com.iscolt.cardsimulator.core.*
 import com.iscolt.cardsimulator.diagnostics.TlvDecoder
+import com.iscolt.cardsimulator.diagnostics.BerTlv
 import org.junit.Assert.*
 import org.junit.Test
 
 class DiagnosticsTest {
+    @Test fun sharedParserPreservesNestedDisplayAndLongLengths() {
+        val response = "6f0e8407a0000001523010a5035001419000"
+        assertEquals(listOf("SW=9000", "6F [14] 8407A0000001523010A503500141",
+            "  84 [7] A0000001523010", "  A5 [3] 500141", "    50 [1] 41").joinToString(System.lineSeparator()),
+            TlvDecoder.decodeResponse(response))
+        val value = "AB".repeat(128)
+        assertEquals("SW=9000" + System.lineSeparator() + "5A [128] $value",
+            TlvDecoder.decodeResponse("5A8180" + value + "9000"))
+        assertEquals(listOf(0, 1, 1, 2), BerTlv.parse(response.uppercase().dropLast(4)).map { it.depth })
+    }
+    @Test fun validPrefixDoesNotHideMalformedTrailingData() {
+        for (payload in listOf("9F38039F02065A02FF", "9F38039F02069F", "9F38039F02065A80")) {
+            assertTrue(payload, runCatching { BerTlv.parse(payload) }.isFailure)
+            assertTrue(payload, TlvDecoder.decodeResponse(payload + "9000").startsWith("非完整 BER-TLV："))
+        }
+    }
     @Test fun nestedTlvAndStatusAreDecoded() {
         val result = TlvDecoder.decodeResponse("6F098407A00000015230109000")
         assertTrue(result.contains("SW=9000")); assertTrue(result.contains("84 [7] A0000001523010"))

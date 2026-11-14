@@ -20,8 +20,15 @@ object CardPackCodec {
         require(description.length <= 4000) { "卡包说明过长" }
         return CardPack(id, name, description, ScriptCodec.parse(clean, builtIn, allowEmpty), builtIn).bound()
     }
-    fun encode(pack: CardPack): String = JSONObject(ScriptCodec.encode(pack.cards))
+    fun json(pack: CardPack): JSONObject = ScriptCodec.json(pack.cards)
         .put("schemaVersion", 2)
         .put("pack", JSONObject().put("id", pack.id).put("name", pack.name).put("description", pack.description))
-        .toString(2)
+    fun encode(pack: CardPack): String = json(pack).toString(2)
+    /** 保留原序列化大小限制，直接校验对象，避免把整个卡包重新解析一遍。 */
+    fun validate(pack: CardPack) {
+        ScriptCodec.checkSize(encode(pack))
+        CardPacks.validateId(pack.id); CardPacks.validateName(pack.name)
+        require(pack.description.length <= 4000) { "卡包说明过长" }
+        ScriptValidation.cards(pack.cards, allowEmpty = true)
+    }
 }

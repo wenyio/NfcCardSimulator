@@ -9,17 +9,13 @@ import com.iscolt.cardsimulator.R
 /** 规则使用独立页面，长 APDU 可滚动编辑，只有保存后才写回卡片草稿。 */
 class RuleEditorPage(private val ui: UiKit) {
     private lateinit var readFields: () -> ApduRule
-    private var error: TextView? = null
+    private lateinit var error: TextView
     fun snapshot() = readFields()
-    fun error(message: String) {
-        error?.text = message; error?.visibility = android.view.View.VISIBLE
-        (error?.parent?.parent as? ScrollView)?.smoothScrollTo(0, 0)
-        Toast.makeText(ui.context, message, Toast.LENGTH_LONG).show()
-    }
+    fun error(message: String) = error.showEditorError(message)
     fun show(parent: LinearLayout, rule: ApduRule) = with(ui) {
         val body = column().apply { setPadding(0, dp(12), 0, dp(20)) }
         parent.addView(ScrollView(context).apply { addView(body) }, LinearLayout.LayoutParams(-1, -1))
-        error = label("", 13f, android.graphics.Color.rgb(185, 28, 28)); body.addView(error); error?.visibility = android.view.View.GONE
+        error = label("", 13f, android.graphics.Color.rgb(185, 28, 28)); body.addView(error); error.visibility = android.view.View.GONE
         val fields = panel(body)
         val title = editorField(fields, context.getString(R.string.rule_label), rule.label)
         val command = editorField(fields, context.getString(R.string.rule_command), rule.command, true)
@@ -54,6 +50,7 @@ class RuleEditorPage(private val ui: UiKit) {
     }
     fun validated(): ApduRule {
         val wrapper = CardScript("validate", "校验", "其他", listOf("F001020304"), "", listOf(snapshot()))
-        return ScriptCodec.parse(ScriptCodec.encode(listOf(wrapper))).single().rules.single()
+        ScriptCodec.checkSize(ScriptCodec.encode(listOf(wrapper)))
+        return ScriptValidation.rule(wrapper.rules.single())
     }
 }

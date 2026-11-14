@@ -46,7 +46,7 @@ class EditingAndHistoryTest {
                 assertEquals("00CA000000", source.rules.first().command)
                 val store = (activity.application as SimulatorApp).store
                 try {
-                    store.importCards(listOf(result))
+                    store.saveEditedCard(result, null)
                     assertEquals(result, com.iscolt.cardsimulator.data.SimulatorStore(activity).cards().first { it.id == result.id })
                 } finally { if (store.cards().any { it.id == result.id }) store.delete(result.id) }
             }

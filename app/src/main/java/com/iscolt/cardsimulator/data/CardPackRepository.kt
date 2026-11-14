@@ -37,12 +37,11 @@ class CardPackRepository(context: Context) {
         require(packs.size <= 100 && packs.map { it.id }.distinct().size == packs.size) { "卡包数量过多或 ID 重复" }
         require(packs.none { p -> builtins.any { it.id == p.id } }) { "不能覆盖内置卡包" }
         require(packs.any { it.id == CardPacks.PERSONAL }) { "自建卡片包缺失" }
-        packs.forEach { p -> CardPacks.validateId(p.id); CardPacks.validateName(p.name)
-            CardPackCodec.parse(CardPackCodec.encode(p), allowEmpty = true) }
+        packs.forEach(CardPackCodec::validate)
         require(packs.sumOf { it.cards.size } <= 2000) { "用户卡片总数最多 2000 张" }
     }
     private fun write(packs: List<CardPack>) {
-        val root = JSONObject().put("storageVersion", 1).put("packs", JSONArray(packs.map { JSONObject(CardPackCodec.encode(it)) }))
+        val root = JSONObject().put("storageVersion", 1).put("packs", JSONArray(packs.map(CardPackCodec::json)))
         val bytes = root.toString().toByteArray(Charsets.UTF_8)
         require(bytes.size <= 20 * 1024 * 1024) { "用户卡包累计数据超过 20 MB" }
         val stream = file.startWrite()
@@ -82,16 +81,6 @@ class CardPackRepository(context: Context) {
         val pack = incoming.copy(id = id, builtIn = false).bound()
         commit(custom.filterNot { it.id == id } + pack)
         return pack
-    }
-    fun saveCards(cards: List<CardScript>) {
-        require(cards.none { it.builtIn }) { "内置卡片不能修改，请复制后编辑" }
-        val grouped = cards.groupBy { it.packId.ifBlank { CardPacks.PERSONAL } }
-        require(grouped.keys.all { id -> custom.any { it.id == id } }) { "目标卡包不存在或只读" }
-        val updated = custom.map { p ->
-            val incoming = grouped[p.id] ?: return@map p
-            p.copy(cards = p.cards.filterNot { old -> incoming.any { it.id == old.id } } + incoming).bound()
-        }
-        commit(updated)
     }
     fun deleteCard(key: String) {
         require(custom.any { p -> p.cards.any { it.key == key } }) { "内置卡片不能删除" }

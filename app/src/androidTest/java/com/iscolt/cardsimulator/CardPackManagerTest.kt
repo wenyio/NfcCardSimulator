@@ -57,8 +57,8 @@ class CardPackManagerTest {
                     assertNotNull(input.error)
                     assertEquals("管理测试", app.store.currentPack().name)
                     input.setText("已重命名"); button("保存")
-                    assertEquals("已重命名", app.store.currentPack().name)
                 }
+                awaitSaved { app.store.currentPack().name == "已重命名" }
                 scenario.recreate()
                 scenario.onActivity { activity ->
                     assertTrue(views(activity.window.decorView).any { it.contentDescription == "当前使用卡包：已重命名" })
@@ -69,6 +69,7 @@ class CardPackManagerTest {
                 scenario.onActivity { activity -> click(activity, "卡包操作：已重命名") }
                 scenario.onActivity { menu("删除卡包") }
                 scenario.onActivity { button("删除") }
+                awaitSaved { app.store.packs().none { it.id == id } }
                 scenario.onActivity { activity ->
                     assertFalse(app.store.packs().any { it.id == id })
                     assertEquals(CardPacks.DEMO, app.store.activePackId)

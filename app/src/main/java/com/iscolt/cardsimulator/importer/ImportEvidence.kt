@@ -18,8 +18,3 @@ data class ImportEvidence(val fileName: String, val sha256: String) {
             format = origin.format.ifBlank { defaultFormat })))
     }
 }
-
-object CardFileImporter {
-    fun parse(text: String, evidence: ImportEvidence): List<CardScript> =
-        ScriptCodec.parse(text).map { evidence.attach(it, "卡片 JSON") }
-}

@@ -2,10 +2,23 @@ package com.iscolt.cardsimulator
 
 import com.iscolt.cardsimulator.core.*
 import com.iscolt.cardsimulator.ui.cards.CardEditorDraft
+import com.iscolt.cardsimulator.ui.cards.EditorMode
 import org.junit.Assert.*
 import org.junit.Test
 
 class CardEditorDraftTest {
+    @Test fun explicitModesRestoreWithoutDependingOnUiLanguage() {
+        val drafts = listOf(CardEditorDraft.create(null, false), CardEditorDraft.create(source, true),
+            CardEditorDraft.create(source.copy(builtIn = false), false))
+        for ((index, draft) in drafts.withIndex()) {
+            assertEquals(EditorMode.entries[index], draft.mode)
+            val state = draft.state()
+            assertFalse(state.has("title"))
+            val restored = CardEditorDraft.restore(state)
+            assertEquals(draft.mode, restored.mode); assertEquals(draft.originalKey, restored.originalKey)
+            assertFalse(restored.dirty)
+        }
+    }
     private val source = CardScript("source", "原卡", "Discover", listOf("A0000001523010"), "说明",
         listOf(ApduRule("00CA000000", "019000"), ApduRule("00CA010000", "029000")), true,
         builtIn = true, metadata = CardMetadata(scenario = TestScenario(purpose = "测试目的", legacyPdol = "9F0206")))

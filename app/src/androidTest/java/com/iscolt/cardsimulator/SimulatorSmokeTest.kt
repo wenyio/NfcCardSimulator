@@ -47,7 +47,7 @@ class SimulatorSmokeTest {
         val app = context.applicationContext as SimulatorApp
         val text = """{"id":"qa-persist","name":"QA","aids":["F001020304"],"rules":[{"command":"00CA000000","response":"9000"}]}"""
         try {
-            app.store.importCards(ScriptCodec.parse(text))
+            app.store.saveEditedCard(ScriptCodec.parse(text).single().copy(packId = com.iscolt.cardsimulator.core.CardPacks.PERSONAL), null)
             val reloaded = SimulatorStore(context)
             assertTrue(reloaded.cards().any { it.id == "qa-persist" })
             app.store.delete("qa-persist")

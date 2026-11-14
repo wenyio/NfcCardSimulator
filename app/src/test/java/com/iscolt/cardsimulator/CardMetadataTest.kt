@@ -23,9 +23,10 @@ class CardMetadataTest {
         val bytes = byteArrayOf(97, 98, 99)
         val evidence = ImportEvidence.from(bytes, "config.json")
         assertEquals("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", evidence.sha256)
-        val card = CardFileImporter.parse(sample, evidence).single()
+        val card = evidence.attach(CardPackCodec.parse(sample).cards.single(), "卡片 JSON")
         assertEquals("config.json", card.metadata.source.fileName)
-        val second = CardFileImporter.parse(ScriptCodec.encode(listOf(card)), ImportEvidence.from(byteArrayOf(0), "export.json")).single()
+        val second = ImportEvidence.from(byteArrayOf(0), "export.json").attach(
+            CardPackCodec.parse(ScriptCodec.encode(listOf(card))).cards.single(), "卡片 JSON")
         assertEquals(card.metadata, second.metadata)
         assertEquals(card.metadata, card.copy(id = "copy").metadata)
     }

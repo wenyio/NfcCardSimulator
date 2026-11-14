@@ -1,16 +1,33 @@
 package com.iscolt.cardsimulator.ui
+import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
+import android.view.View
 import android.widget.*
+import androidx.core.view.WindowCompat
 
 /** 统一控件样式；不包含卡片、文件或 NFC 业务。 */
 class UiKit(val context: Context) {
     val ink = Color.rgb(21, 37, 56)
     val muted = Color.rgb(100, 116, 139)
     val blue = Color.rgb(37, 99, 235)
+    fun systemBars(activity: Activity) = with(activity.window) {
+        statusBarColor = ink; navigationBarColor = ink
+        WindowCompat.getInsetsController(this, decorView).isAppearanceLightStatusBars = false
+    }
+    /** 共用窗口和工具栏样式，内容区的边距、滚动和生命周期仍由页面管理。 */
+    fun shell(activity: Activity, content: View): LinearLayout {
+        systemBars(activity)
+        val toolbar = row().apply { setBackgroundColor(ink); setPadding(dp(8), dp(4), dp(8), dp(4)) }
+        activity.setContentView(column().apply {
+            setBackgroundColor(Color.rgb(241, 245, 249)); addView(toolbar)
+            addView(content, LinearLayout.LayoutParams(-1, 0, 1f))
+        })
+        return toolbar
+    }
     fun dp(value: Int) = (value * context.resources.displayMetrics.density).toInt()
     fun background(color: Int) = GradientDrawable().apply { setColor(color); cornerRadius = dp(16).toFloat() }
     fun label(text: String, size: Float = 15f, color: Int = ink, bold: Boolean = false) = TextView(context).apply {

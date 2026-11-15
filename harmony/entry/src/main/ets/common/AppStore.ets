@@ -48,8 +48,9 @@ export class AppStore {
     elementName: bundleManager.ElementName): void {
     if (AppStore.instance === null) {
       AppStore.instance = new AppStore(context);
-      HceManager.getInstance().attach(AppStore.instance.store, elementName);
     }
+    // Ability 重建时也更新 HCE 绑定，进程单例可能仍然存活。
+    HceManager.getInstance().attach(AppStore.instance.store, elementName);
   }
 
   static getInstance(): AppStore {

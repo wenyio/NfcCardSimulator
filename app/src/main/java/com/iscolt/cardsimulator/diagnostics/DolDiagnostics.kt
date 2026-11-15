@@ -2,6 +2,7 @@ package com.iscolt.cardsimulator.diagnostics
 
 import com.iscolt.cardsimulator.core.ApduRule
 import com.iscolt.cardsimulator.core.Hex
+import com.iscolt.cardsimulator.core.MatchMode
 
 /** DOL 中的一项：标签标识字段，length 是随后命令中该字段值的字节数。 */
 internal data class DolField(val tag: String, val length: Int)
@@ -75,8 +76,15 @@ class DolDiagnostics {
             definitions[type] ?: return "$title：当前会话尚未获得 $type 定义，仅保留原始命令差异。"
         return try {
             val fields = parseDol(definition)
-            val expected = commandData(rule.command, type == "9F38")
             val input = commandData(actual, type == "9F38")
+            val expected = try { commandData(rule.command, type == "9F38") }
+            catch (error: IllegalArgumentException) {
+                if (rule.mode == MatchMode.PREFIX && actual.startsWith(rule.command) && rule.command.length < actual.length) {
+                    require(input.length == fields.sumOf { it.length } * 2) { "实际输入长度与 DOL 定义不一致" }
+                    return "$title：规则仅提供命令前缀，未提供完整参考数据；实际输入长度符合 DOL，固定回复不会重算签名或密文。"
+                }
+                throw error
+            }
             val size = fields.sumOf { it.length } * 2
             require(expected.length == size && input.length == size) {
                 "DOL 要求 " + size / 2 + " 字节，期望输入 " + expected.length / 2 + "，实际输入 " + input.length / 2

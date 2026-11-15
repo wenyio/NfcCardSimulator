@@ -1,4 +1,4 @@
-import { ApduRule, CardScript, Exchange } from './CardScript';
+import { ApduRule, CardScript, Exchange, MatchMode } from './CardScript';
 import { Hex } from './Hex';
 import { DolDiagnostics } from '../diagnostics/DolDiagnostics';
 import { RuleDifference } from '../diagnostics/RuleDifference';
@@ -75,7 +75,17 @@ export class ScriptEngine {
     } else {
       index = this.script.rules.indexOf(rule);
     }
-    const detail = this.dol.describe(rule, command, true);
+    // 同回复且唯一的完整命令仅用于诊断，不改变 PREFIX 的匹配结果。
+    let reference = rule;
+    const matchedRule = rule;
+    if (rule.mode === MatchMode.PREFIX) {
+      const candidates = this.script.rules.filter((item: ApduRule): boolean =>
+        item.mode === MatchMode.EXACT && item.response === matchedRule.response && item.command.startsWith(matchedRule.command));
+      if (candidates.length === 1) {
+        reference = candidates[0];
+      }
+    }
+    const detail = this.dol.describe(reference, command, true);
     this.dol.observe(command, rule.response);
     const label = rule.label.length > 0 ? rule.label : `规则 ${index + 1}`;
     return new Exchange(rule.response, label, true, detail);

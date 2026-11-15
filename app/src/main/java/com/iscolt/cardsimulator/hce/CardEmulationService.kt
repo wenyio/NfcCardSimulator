@@ -20,6 +20,17 @@ class CardEmulationService : HostApduService() {
     private var revision: Long = -1
     private var session = "NFC"
 
+    override fun onCreate() {
+        super.onCreate()
+        store.log("HCE", "服务已创建")
+    }
+
+    override fun onDestroy() {
+        engine = null
+        store.log("HCE", "服务已销毁")
+        super.onDestroy()
+    }
+
     /**
      * Android 将路由到本服务的 C-APDU 交给此回调，本函数同步返回完整 R-APDU 字节数组。
      * APDU（Application Protocol Data Unit，应用协议数据单元）；C 为 Command（命令），R 为 Response（响应）。
@@ -32,6 +43,7 @@ class CardEmulationService : HostApduService() {
         val card = store.selected()
         if (!store.enabled || card == null) {
             engine = null
+            store.log("T → C", input)
             // 6985：使用条件不满足。路由仍可能存在，但应用当前没有允许脚本模拟。
             store.log("C → T", "6985 · 模拟未启动")
             return Hex.bytes("6985")
@@ -64,7 +76,7 @@ class CardEmulationService : HostApduService() {
         engine = null
         store.log(
             "会话",
-            if (reason == DEACTIVATION_LINK_LOSS) "射频连接断开" else "切换到其他 NFC 服务",
+            (if (reason == DEACTIVATION_LINK_LOSS) "射频连接断开" else "切换到其他 NFC 服务") + "；reason=$reason",
             session
         )
     }

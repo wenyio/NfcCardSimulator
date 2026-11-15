@@ -62,7 +62,11 @@ class ScriptEngine(val script: CardScript) {
         // 后置 ++ 先取得本次索引再推进；只有走到命中分支才执行，失败回复不消耗步骤。
         val index = if (script.ordered) cursor++ else script.rules.indexOf(rule)
         // 宽松匹配成功也提示输入变化：掩码只影响选规则，不能令固定密文或签名适配新输入。
-        val detail = dol.describe(rule, command, true)
+        // PREFIX 可配一条同回复的完整 EXACT 作为诊断参考；它不参与本次选规则。
+        val reference = if (rule.mode == MatchMode.PREFIX) script.rules.filter {
+            it.mode == MatchMode.EXACT && it.response == rule.response && it.command.startsWith(rule.command)
+        }.singleOrNull() ?: rule else rule
+        val detail = dol.describe(reference, command, true)
         // 先解释当前输入，再观察本次固定回复，避免用尚未返回的定义反向解释之前的输入。
         dol.observe(command, rule.response)
         return Exchange(rule.response, rule.label.ifBlank { "规则 ${index + 1}" }, true, detail)

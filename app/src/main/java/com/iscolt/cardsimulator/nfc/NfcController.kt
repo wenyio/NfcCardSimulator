@@ -53,12 +53,18 @@ class NfcController(private val activity: Activity, private val store: Simulator
         // ASCII（American Standard Code for Information Interchange，美国信息交换标准代码）定义字符与字节的对应。
         val aids = (listOf("325041592E5359532E4444463031") + card.aids).distinct()
         // 注册成功后才启动模拟；失败不能伪装为已启动。
-        val accepted = CardEmulation.getInstance(nfc)
-            .registerAidsForService(service, CardEmulation.CATEGORY_PAYMENT, aids)
+        val manager = CardEmulation.getInstance(nfc)
+        val accepted = manager.registerAidsForService(service, CardEmulation.CATEGORY_PAYMENT, aids)
         if (!accepted) {
             store.log("路由错误", "service=$service; category=payment; aids=$aids; result=false")
             error(activity.getString(R.string.nfc_registration_failed))
         }
+        val registered = manager.getAidsForService(service, CardEmulation.CATEGORY_PAYMENT)
+        check(registered?.toSet() == aids.toSet()) {
+            store.log("路由错误", "AID 注册回读不一致：期望=$aids；实际=$registered")
+            activity.getString(R.string.nfc_registration_failed)
+        }
+        store.log("会话", "已注册并回读 AID 路由：${aids.joinToString(" ")}；service=$service")
         store.setEnabled(true)
     }
 

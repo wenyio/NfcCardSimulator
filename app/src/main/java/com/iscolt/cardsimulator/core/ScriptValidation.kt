@@ -14,7 +14,8 @@ object ScriptValidation {
 
     /** 校验命令、含状态字的回复及掩码长度；返回副本，非 MASK 模式清空正式规则的掩码。 */
     fun rule(rule: ApduRule, index: Int = 0): ApduRule {
-        val command = hex(rule.command, "规则 ${index + 1} command", 4)
+        // 通用 PREFIX 可只比较 CLA/INS（如 80AE）；真实输入仍至少有 4 字节命令头。
+        val command = hex(rule.command, "规则 ${index + 1} command", if (rule.mode == MatchMode.PREFIX) 2 else 4)
         val response = hex(rule.response, "规则 ${index + 1} response", 2)
         val mask = if (rule.mode == MatchMode.MASK) hex(rule.mask, "mask") else ""
         require(rule.mode != MatchMode.MASK || mask.length == command.length) { "mask 必须与 command 等长" }

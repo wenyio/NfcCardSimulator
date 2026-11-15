@@ -81,6 +81,12 @@ export class HceManager {
     try {
       if (this.routed) {
         this.hceService.stop(element);
+        // stop 同时取消 hceCmd 订阅，不能沿用旧的 subscribed 标记。
+        this.subscribed = false;
+        this.routed = false;
+        this.routedAids = '';
+        this.engine = null;
+        this.revision = -1;
       }
       this.hceService.start(element, aids);
       if (!this.subscribed) {
@@ -89,14 +95,21 @@ export class HceManager {
       }
     } catch (error) {
       const err = error as BusinessError;
+      // start 成功而订阅失败时撤销半成品，下一次启动必须重新建立两者。
+      try {
+        this.hceService.stop(element);
+      } catch (cleanupError) {
+        hilog.warn(DOMAIN, TAG, 'route cleanup failed: %{public}s', JSON.stringify(cleanupError));
+      }
+      this.subscribed = false;
       this.routed = false;
+      this.routedAids = '';
+      this.engine = null;
       // 注册成功后才启动模拟；失败不能伪装为已启动。
       store.log('路由错误', `element=${element.abilityName}; category=payment; aids=${signature}; result=false`);
       throw new Error(`系统未接受 AID 路由注册，模拟未启动。请确认设备支持 HCE，详见日志。（${err.message}）`);
     }
-    if (!this.routed) {
-      store.log('会话', `已注册 AID 路由：${signature}`);
-    }
+    store.log('会话', `已注册 AID 路由：${signature}；hceCmd 已订阅`);
     this.routed = true;
     this.routedAids = signature;
   }
@@ -120,6 +133,10 @@ export class HceManager {
       }
       this.subscribed = false;
     }
+    this.routedAids = '';
+    this.engine = null;
+    this.revision = -1;
+    this.routed = false;
   }
 
   /** 系统将路由到本服务的 C-APDU 交给此回调；执行规则匹配和内存日志追加，日志文件另异步保存。 */
@@ -139,6 +156,10 @@ export class HceManager {
       return;
     }
     const input = Hex.text(command);
+    // 先记录接收事件，禁用状态也保留终端实际发送的命令。
+    if (!store.enabled) {
+      store.log('T → C', input);
+    }
     const card = store.selected();
     if (!store.enabled || card === null) {
       this.engine = null;
@@ -169,9 +190,11 @@ export class HceManager {
   private transmit(hex: string): void {
     try {
       this.hceService.transmit(Hex.bytes(hex)).catch((err: BusinessError): void => {
+        this.store?.log('错误', `发送 APDU 失败：${err.code} ${err.message}`, this.session);
         hilog.error(DOMAIN, TAG, 'transmit failed: %{public}s', JSON.stringify(err));
       });
     } catch (error) {
+      this.store?.log('错误', `发送 APDU 失败：${(error as Error).message}`, this.session);
       hilog.error(DOMAIN, TAG, 'transmit invalid: %{public}s', JSON.stringify(error));
     }
   }

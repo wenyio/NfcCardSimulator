@@ -1,4 +1,4 @@
-import { ApduRule } from '../core/CardScript';
+import { ApduRule, MatchMode } from '../core/CardScript';
 import { Hex } from '../core/Hex';
 import { BerTlv, TlvValue } from './BerTlv';
 
@@ -121,8 +121,23 @@ export class DolDiagnostics {
     }
     try {
       const fields = this.parseDol(definition);
-      const expected = this.commandData(rule.command, type === '9F38');
       const input = this.commandData(actual, type === '9F38');
+      let expected: string;
+      try {
+        expected = this.commandData(rule.command, type === '9F38');
+      } catch (error) {
+        if (rule.mode === MatchMode.PREFIX && actual.startsWith(rule.command) && rule.command.length < actual.length) {
+          let size = 0;
+          for (const field of fields) {
+            size += field.length * 2;
+          }
+          if (input.length !== size) {
+            throw new Error('实际输入长度与 DOL 定义不一致');
+          }
+          return `${title}：规则仅提供命令前缀，未提供完整参考数据；实际输入长度符合 DOL，固定回复不会重算签名或密文。`;
+        }
+        throw new Error((error as Error).message);
+      }
       let total = 0;
       for (const field of fields) {
         total += field.length;

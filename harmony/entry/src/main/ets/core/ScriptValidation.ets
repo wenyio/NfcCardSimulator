@@ -19,7 +19,8 @@ export class ScriptValidation {
   }
 
   static rule(rule: ApduRule, index: number = 0): ApduRule {
-    const command = ScriptValidation.hex(rule.command, `规则 ${index + 1} command`, 4);
+    // PREFIX 可只比较 CLA/INS；真实输入仍由引擎检查完整命令头。
+    const command = ScriptValidation.hex(rule.command, `规则 ${index + 1} command`, rule.mode === MatchMode.PREFIX ? 2 : 4);
     const response = ScriptValidation.hex(rule.response, `规则 ${index + 1} response`, 2);
     const mask = rule.mode === MatchMode.MASK ? ScriptValidation.hex(rule.mask, 'mask') : '';
     if (rule.mode === MatchMode.MASK && mask.length !== command.length) {

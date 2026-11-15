@@ -14,6 +14,9 @@ import com.iscolt.cardsimulator.ui.cards.CardPackImportDialog
 import com.iscolt.cardsimulator.ui.cards.TransactionImportDialog
 import com.iscolt.cardsimulator.ui.cards.PackWork
 import java.util.concurrent.Executors
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import com.iscolt.cardsimulator.R
 
 /** SAF 文件访问与解析在后台执行；页面只负责触发操作。 */
@@ -60,7 +63,14 @@ class DocumentController(
 
     /** 按可选卡片过滤导出日志，暂存文本后请系统创建文档；null 表示全部日志。 */
     fun exportLogs(cardId: String? = null) {
-        stage(store.logText(cardId)); logExporter.launch("nfc-apdu-log.txt")
+        val scope = if (cardId == null) "all" else store.findCard(cardId)?.name ?: cardId
+        val name = scope.map {
+            if (it.code < 32 || it.code == 127 || it in "\\/:*?\"<>|" || it.isWhitespace()) '_' else it
+        }
+            .joinToString("").trim(' ', '.', '_').take(60).ifBlank { "card" }
+        val timestamp = SimpleDateFormat("yyyyMMdd-HHmmss-SSS", Locale.ROOT).format(Date())
+        stage(store.logText(cardId))
+        logExporter.launch("nfc-apdu-log_${name}_${timestamp}.txt")
     }
 
     /**

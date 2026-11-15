@@ -60,7 +60,23 @@ export class DocumentController {
 
   /** 按可选卡片过滤导出日志，暂存文本后请系统保存；null 表示全部日志。 */
   exportLogs(cardId: string | null): void {
-    this.save(this.store.logText(cardId), 'nfc-apdu-log.txt');
+    const scope = cardId === null ? 'all' : (this.store.findCard(cardId)?.name ?? cardId);
+    let safeName = '';
+    for (let index = 0; index < scope.length; index++) {
+      const letter = scope.charAt(index);
+      const code = scope.charCodeAt(index);
+      safeName += code < 32 || code === 127 || '\\/:*?"<>|'.includes(letter) || letter.trim() === '' ? '_' : letter;
+    }
+    const name = safeName.replace(new RegExp('^[ ._]+|[ ._]+$', 'g'), '').substring(0, 60) || 'card';
+    const date = new Date();
+    const timestamp = `${date.getFullYear()}${DocumentController.pad(date.getMonth() + 1)}${DocumentController.pad(date.getDate())}`
+      + '-' + DocumentController.pad(date.getHours()) + DocumentController.pad(date.getMinutes())
+      + DocumentController.pad(date.getSeconds()) + '-' + DocumentController.pad(date.getMilliseconds(), 3);
+    this.save(this.store.logText(cardId), `nfc-apdu-log_${name}_${timestamp}.txt`);
+  }
+
+  private static pad(part: number, width: number = 2): string {
+    return part.toString().padStart(width, '0');
   }
 
   /** 按大小上限读取文档，计算原始证据并分流 JSON 或交易文本解析；成功后展示预览。 */

@@ -2,6 +2,8 @@
 
 NFC HCE 脚本工具，Android 与鸿蒙源码在同一仓库管理，分别构建。Android 正式包名 `com.iscolt.cardsimulator`，调试包名 `com.iscolt.cardsimulator.debug`；鸿蒙包名 `com.iscolt.cardsimulator.harmony`。
 
+项目采用 [Apache-2.0](LICENSE) 许可证。参与开发前请阅读 [贡献指南](CONTRIBUTING.md)；第三方代码与依赖说明见 [NOTICE](NOTICE)。
+
 Android Studio 打开仓库根目录；DevEco Studio 打开 [harmony](harmony/)。鸿蒙构建与签名见 [鸿蒙工程说明](harmony/README.md)，目录与 Git 管理见 [跨平台管理约定](docs/CROSS-PLATFORM-GIT.md)。下文的系统版本、构建命令与手机设置流程针对 Android，鸿蒙的平台行为以其工程说明与验证记录为准。
 
 源码入门：[阅读指南](docs/CODE-READING-GUIDE.md) · [术语表](docs/NFC-GLOSSARY.md)。
@@ -34,6 +36,8 @@ Android Studio 打开仓库根目录；DevEco Studio 打开 [harmony](harmony/)�
 ## 构建
 
 使用 JDK 17，运行 `gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:exportDebugApk`。
+
+首次构建需安装 Android SDK Platform 36，并通过 Android Studio 或本机 `local.properties` 设置 SDK 位置（例如 `sdk.dir=C:/Users/your-name/AppData/Local/Android/Sdk`）。该文件不提交。macOS / Linux 使用 `bash ./gradlew :app:testDebugUnitTest :app:lintDebug :app:exportDebugApk`。Debug 构建无需 Release 签名材料；GitHub Actions 会执行相同的单元测试、Lint 与打包任务。
 
 生成 artifacts/NfcCardSimulator-v1.0.0-debug.apk，使用标准 Android 调试签名。Release 使用独立本地签名，配置与备份说明见 [docs/RELEASE-SIGNING.md](docs/RELEASE-SIGNING.md)。
 

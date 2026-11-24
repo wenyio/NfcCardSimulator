@@ -1,0 +1,20 @@
+NfcCardSimulator
+Copyright 2026 Gemyi and contributors
+
+This project is licensed under the Apache License, Version 2.0.
+
+HarmonyOS generated application templates include code marked:
+Copyright (c) 2026 Huawei Device Co., Ltd.
+Licensed under the Apache License, Version 2.0.
+The original copyright and license headers are retained in those files.
+
+The Gradle Wrapper includes software from the Gradle project, licensed under
+the Apache License, Version 2.0. Its original script headers are retained.
+
+Android and HarmonyOS dependencies remain subject to their respective licenses.
+Dependency coordinates and versions are declared in app/build.gradle.kts,
+gradle/libs.versions.toml and the harmony/oh-package*.json5 files.
+
+Payment network names and identifiers are used for protocol interoperability
+and do not imply endorsement or affiliation. No third-party test card packs
+are distributed with this project.

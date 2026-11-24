@@ -47,3 +47,10 @@ emulator-qa*.log
 *.hap
 *.app
 __pycache__/
+
+# Local credentials and private key exports
+.env
+.env.*
+!.env.example
+*.pem
+*.key
